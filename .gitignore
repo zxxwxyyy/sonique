@@ -17,3 +17,4 @@ __pycache__
 stable_audio_tools/configs
 wandb
 demo_videos
+stable_audio_tools.egg-info
