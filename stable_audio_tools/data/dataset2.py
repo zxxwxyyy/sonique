@@ -20,72 +20,81 @@ from typing import Optional, Callable, List
 from .utils import Stereo, Mono, PhaseFlipper, PadCrop_Normalized_T
 import json
 import yaml
+from pathlib import Path
+import os
+import librosa
 
 AUDIO_KEYS = ("flac", "wav", "mp3", "m4a", "ogg", "opus")
-
-# def get_custom_metadata(info, audio):
-#     metadata_file = info['path'].replace("mix.flac", "metadata.yaml")
-#     # print(f"metadata path exist? : {os.path.exists(metadata_file)}")
-#     with open(metadata_file) as f:
-#         metadata = yaml.safe_load(f)
-#     # print("Metadata function called!")
-#     instruments = [stem['inst_class'] for stem in metadata['stems'].values()]
-#     # print(f'getting instrument metadata: {instruments}')
-#     custom_metadata = {
-#         # 'instruments': [stem['inst_class'] for stem in metadata['stems'].values()],
-#         "prompt": 'Mix of ' + ', '.join(set(instruments))
-#     }
-#     # print(f"custom_metadata: {custom_metadata}")
-#     return custom_metadata
 
 
 class MetadataNotFoundError(Exception):
     pass
 
+def parse_time(time_str):
+    seconds, _ = map(int, time_str.split(':'))
+    return seconds
+
+def load_metadata(metadata_file):
+    with open(metadata_file, 'r', encoding='utf-8') as f:
+        return json.load(f)
+
+def generate_combined_tags(chunks, seconds_start, seconds_end):
+    combined_tags_set = set() 
+    for chunk in chunks:
+        chunk_start = parse_time(chunk['start'])
+        chunk_end = parse_time(chunk['end'])
+        if seconds_start < chunk_end and seconds_end > chunk_start:
+            tags_words = [tag.strip() for tag in chunk['tags'].split(",") if tag.strip()]
+            combined_tags_set.update(tags_words)
+    combined_tags = ", ".join(sorted(combined_tags_set)) 
+    return combined_tags
+
 def get_custom_metadata(info, audio):
-    if "slakh2100_1st_iter" in info['path']:
-        metadata_file = '/scratch/lz2807/metadata_tags.json'
-    elif "ballroom" in info['path']:
-        metadata_file = '/scratch/lz2807/ballroom/audio/metadata_tags.json'
-    elif "guitarset" in info['path']:
-        metadata_file = '/scratch/lz2807/guitarset/metadata_tags.json'
-    elif "medleydb_pitch" in info['path']:
-        metadata_file = '/scratch/lz2807/medleydb_pitch/metadata_tags.json'
-    elif "brid" in info['path']:
-        metadata_file = '/scratch/lz2807/metadata_tags.json'
-    elif "candombe" in info['path']:
-        metadata_file = '/scratch/lz2807/candombe/metadata_tags.json'
-    elif "cuidado" in info['path']:
-        metadata_file = '/scratch/lz2807/cuidado/metadata_tags.json'
-    elif "gtzan_genres" in info['path']:
-        metadata_file = '/scratch/lz2807/gtzan_genres/metadata_tags.json'
-    elif "hainsworth" in info['path']:
-        metadata_file = '/scratch/lz2807/hainsworth/metadata_tags.json'
-    elif "maestro" in info['path']:
-        metadata_file = '/scratch/lz2807/maestro/metadata_tags.json'
-    elif "orchset" in info['path']:
-        metadata_file = '/scratch/lz2807/orchset/metadata_tags.json'
-    elif "smc-rock-simac-hjdb" in info['path']:
-        metadata_file = '/scratch/lz2807/smc-rock-simac-hjdb/metadata_tags.json'
-    elif "musicqa" in info['path']:
-        metadata_file = '/scratch/lz2807/musicqa/metadata_tags.json'
-
-    if not os.path.exists(metadata_file):
-        raise MetadataNotFoundError(f"Metadata file not found in {metadata_file}")
-    with open(metadata_file, 'r') as f:
-        dataset_metadata = json.load(f)
+    dataset_sources = {
+        "pixabay_music4": "C:/Users/lzhan/Downloads/pixabay_music4/metadata_tags1.json",
+        "pixabay_music3": "C:/Users/lzhan/Downloads/pixabay_music3/metadata_tags1.json",
+        "pixabay_music2": "C:/Users/lzhan/Downloads/pixabay_music2/metadata_tags1.json",
+        "pixabay_music1": "C:/Users/lzhan/Downloads/pixabay_music1/metadata_tags1.json",
+        "pixabay_music": "C:/Users/lzhan/Downloads/pixabay_music/metadata_tags1.json",
+        "bbc_sound": "/scratch/lz2807/bbc_sound/metadata_tags.json",
+        "slakh2100_1st_iter":'C:/Users/lzhan/Downloads/slakh2100_1st_iter/metadata_tags3.json',
+        "brid": '/scratch/lz2807/brid/metadata_tags.json',
+        "ballroom": '/scratch/lz2807/ballroom/audio/metadata_tags.json',
+        "guitarset": '/scratch/lz2807/guitarset/metadata_tags.json',
+        "candombe": '/scratch/lz2807/candombe/metadata_tags.json',
+        "cuidado": '/scratch/lz2807/cuidado/metadata_tags.json',
+        "gtzan_genres": '/scratch/lz2807/gtzan_genres/metadata_tags.json',
+        "hainsworth": '/scratch/lz2807/hainsworth/metadata_tags.json',
+        "maestro": '/scratch/lz2807/maestro/metadata_tags.json',
+        "slakh2100_flac_redux": "/scratch/lz2807/slakh2100_flac_redux/metadata_tags.json",
+    }
     
+    for source, metadata_path in dataset_sources.items():
+        if source in info['path']:
+            print(f'source in info path: {source}')
+            dataset_metadata = load_metadata(metadata_path)
+            track_identifier = "/".join(info['path'].replace('\\', '/').split('/')[-2:])
+            print(track_identifier)
+            
+            if source.startswith("maestro"):
+                # track_identifier = os.path.join(*info['path'].split('/')[-1:]).replace('\\', '/')
+                # track_metadata = dataset_metadata[track_identifier]
+                # tags = track_metadata.get('tags', [])
+                # custom_metadata = {"prompt": tags}
+                prompt_str = ", ".join(dataset_metadata[track_identifier])
+                custom_metadata = {"prompt": prompt_str}
+            elif source.startswith("gtzan"):
+                prompt_str = ", ".join(dataset_metadata[track_identifier])
+                custom_metadata = {"prompt": prompt_str}
+            else: 
+                track_metadata = dataset_metadata[track_identifier]
+                tags = track_metadata.get('tags', [])
+                custom_metadata = {"prompt": tags}
 
-    track_identifier = os.path.join(*info['path'].split('/')[-2:]) 
-
-    if track_identifier not in dataset_metadata:
-        raise MetadataNotFoundError(f"No metadata found for {track_identifier}")
+            print(f'custom_metdata: {custom_metadata}')    
+            return custom_metadata
     
-    metadata = dataset_metadata[track_identifier]
-    prompt = metadata
-    custom_metadata = {"prompt": prompt}
-    return custom_metadata
-
+    raise MetadataNotFoundError(f"No suitable metadata source found for path: {info['path']}")
 
 # fast_scandir implementation by Scott Hawley originally in https://github.com/zqevans/audio-diffusion/blob/main/dataset/dataset.py
 
@@ -215,10 +224,14 @@ class SampleDataset(torch.utils.data.Dataset):
         ext = filename.split(".")[-1]
 
         if ext == "mp3":
-            with AudioFile(filename) as f:
-                audio = f.read(f.frames)
-                audio = torch.from_numpy(audio)
-                in_sr = f.samplerate
+            # with AudioFile(filename) as f:
+            #     audio = f.read(f.frames)
+            #     audio = torch.from_numpy(audio)
+            #     in_sr = f.samplerate
+            audio, in_sr = librosa.load(filename, sr=self.sr)
+            audio = torch.from_numpy(audio).float()
+            if audio.ndim < 2:
+                audio = audio.unsqueeze(0)
         else:
             audio, in_sr = torchaudio.load(filename, format=ext)
 
@@ -237,7 +250,7 @@ class SampleDataset(torch.utils.data.Dataset):
             start_time = time.time()
             audio, sr= self.load_file(audio_filename)
 
-            audio, prev_chunk, t_start, t_end, seconds_start, seconds_total, padding_mask = self.pad_crop(audio, sr)
+            audio, t_start, t_end, seconds_start, seconds_total, padding_mask = self.pad_crop(audio)
 
             # Run augmentations on this sample (including random crop)
             if self.augs is not None:
@@ -275,6 +288,7 @@ class SampleDataset(torch.utils.data.Dataset):
                     return self[random.randrange(len(self))]
             # print(f'Seconds start: {seconds_start}, Seconds Total: {seconds_total}, Prev Start: {prev_start}, Prev End: {prev_end}')
             # print(f'Audio shape: {audio.shape}, custom metadata shape: {prev_chunk.shape}')
+            # print(f'loading data: {info}')
             return (audio, info)
             # return (audio, prev_audio)
         except Exception as e:

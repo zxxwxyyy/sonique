@@ -29,7 +29,7 @@ class PadCrop_Normalized_T(nn.Module):
         self.sample_rate = sample_rate
         self.randomize = randomize
 
-    def __call__(self, source: torch.Tensor, sample_rate) -> Tuple[torch.Tensor, float, float, int, int]:
+    def __call__(self, source: torch.Tensor) -> Tuple[torch.Tensor, float, float, int, int]:
         
         n_channels, n_samples = source.shape
         
@@ -51,31 +51,16 @@ class PadCrop_Normalized_T(nn.Module):
         # Copy the audio into the chunk
         chunk[:, :min(n_samples, self.n_samples)] = source[:, offset:offset + self.n_samples]
         
-        # Previous chunk for condition =============================
-        seconds_before = 5
-        samples_before = sample_rate * seconds_before
-
-        prev_chunk = source.new_zeros([n_channels, samples_before])
-        start_index = max(0, offset - samples_before)
-
-        prev_chunk[:, :min(offset, samples_before)] = source[:, start_index:offset]
-
-        # prev_chunk = torch.tensor(prev_chunk)
-        # print(f"prev_chunk: {prev_chunk}")
-        # ==========================================================
 
         # Calculate the start and end times of the chunk in seconds
         seconds_start = math.floor(offset / self.sample_rate)
         seconds_total = math.ceil(n_samples / self.sample_rate)
-
         # Create a mask the same length as the chunk with 1s where the audio is and 0s where it isn't
         padding_mask = torch.zeros([self.n_samples])
         padding_mask[:min(n_samples, self.n_samples)] = 1
-        
         # print(f'Chunk shape from utils: {chunk.shape}, Prev chunk shape: {prev_chunk.shape}')
         return (
             chunk,
-            prev_chunk,
             t_start,
             t_end,
             seconds_start,

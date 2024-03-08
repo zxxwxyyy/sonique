@@ -5,6 +5,7 @@ import json
 import torch
 import torchaudio
 import os
+import random
 
 from aeiou.viz import audio_spectrogram_image
 from einops import rearrange
@@ -112,7 +113,7 @@ def generate_cond(
     if preview_every == 0:
         preview_every = None
     print(f'use video? {use_video}, use melody? {use_init}')
-    prompt = f"{instruments}, {genres}, {tempo}"
+    prompt = f"{instruments}, {genres}, {tempo.lower()}"
     print(prompt)
     # Return fake stereo audio
     conditioning = [{"prompt": prompt, "seconds_start": seconds_start, "seconds_total": seconds_total}] * batch_size
@@ -144,9 +145,9 @@ def generate_cond(
                 device_map="auto",
                 torch_dtype=torch.float16
             )
-        tokenizer = AutoTokenizer.from_pretrained("Qwen/Qwen1.5-4B-Chat")
+        tokenizer = AutoTokenizer.from_pretrained("Qwen/Qwen1.5-14B-Chat")
         messages = [
-                {"role": "system", "content": "As a music composer fluent in English, you're tasked with creating background music for video. Based on the scene described, provide only one set of tags in English. These tags must focus on instruments, music genres, and tempo (BPM). Avoid any non-English words. Example of expected output: guitar, drums, bass, rock, 140 BPM"},
+                {"role": "system", "content": "As a music composer fluent in English, you're tasked with creating background music for video. Based on the scene described, provide only one set of tags in English that describe this background music for the video. These tags must includes instruments, music genres, and tempo (BPM). Avoid any non-English words. Example of expected output: Piano, Synths, Strings, Violin, Flute, Reflective, Slow tempo, 96 BPM"},
                 {"role": "user", "content": str(video_des)}
             ]
         text = tokenizer.apply_chat_template(
@@ -172,7 +173,7 @@ def generate_cond(
         print(f'current element: {current_elements}')
         print(f'new elements: {new_elements}')
 
-        current_bpm = next((element for element in current_elements if 'BPM' in element), None)
+        current_bpm = next((element for element in current_elements if 'bpm' in element), None)
         new_bpm = next((element for element in new_elements if 'BPM' in element), None)
         
         if current_bpm:
@@ -184,7 +185,7 @@ def generate_cond(
         updated_elements.update(new_elements)
         
         bpm_to_include = current_bpm if current_bpm else new_bpm
-        
+        bpm_to_include = bpm_to_include.lower()
         updated_prompt = ', '.join(sorted(updated_elements)) + (', ' + bpm_to_include if bpm_to_include else '')
         conditioning[0]['prompt'] = updated_prompt
     print(f'updated conditioning prompt: {conditioning}')
@@ -561,7 +562,10 @@ def create_sampling_ui(model_config, inpainting=False):
     ]
     video_examples = gr.Examples(examples=[
         [True, "./stable_audio_tools/Video_LLaMA/demo_videos/Better_Call_Saul2.mp4"],
+        [True, "./stable_audio_tools/Video_LLaMA/demo_videos/Better_Call_Saul4.mp4"],
+        [True, "./stable_audio_tools/Video_LLaMA/demo_videos/breakingbad_4.mp4"],
         [True, "./stable_audio_tools/Video_LLaMA/demo_videos/breakingbad_6.mp4"],
+        [True, "./stable_audio_tools/Video_LLaMA/demo_videos/friends_2.mp4"],
         ], 
                            inputs=video_only_inputs,
                            outputs=[audio_output, 
@@ -597,8 +601,9 @@ def create_sampling_ui(model_config, inpainting=False):
         tempo,
     ]
     prompt_examples = gr.Examples(examples=[
-        ["guitar, drums, bass", "rock", "130 BPM"],
-        ["piano", "classical, ambient, slow", "80 BPM"],
+        ["Guitar, Drums, Bass", "Rock", "130 bpm"],
+        ["Piano", "Classical, Ambient, Slow", "80 bpm"],
+        ["Drums", "", "80 bpm"]
         ], 
                            inputs=prompt_input,
                            outputs=[audio_output, 
@@ -618,8 +623,8 @@ def create_sampling_ui(model_config, inpainting=False):
         init_noise_level_slider,
     ]
     prompt_melody_examples = gr.Examples(examples=[
-        ["guitar, piano, bass", "jazz", "130 BPM", True, "./stable_audio_tools/Video_LLaMA/demo_videos/drums.wav", 5],
-        ["piano", "ambient, slow", "70 BPM", True, "./stable_audio_tools/Video_LLaMA/demo_videos/1908-4.wav", 3],
+        ["Guitar, Piano, Bass", "Jazz", "130 bpm", True, "./stable_audio_tools/Video_LLaMA/demo_videos/drums.wav", 5],
+        ["Piano", "Ambient, Slow", "70 bpm", True, "./stable_audio_tools/Video_LLaMA/demo_videos/1908-4.wav", 3],
         ], 
                            inputs=prompt_melody_input,
                            outputs=[audio_output, 
