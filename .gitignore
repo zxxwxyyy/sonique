@@ -31,6 +31,7 @@ clean_metadata_pixabay2_tags.py
 clean_metadata_pixabay3_tags.py
 clean_metadata_pixabay4_tags.py
 clean_metadata_slakh_tags.py
+clean_metadata_pixabay5_tags.py
 clean_metadata1.py
 dataset_metadata.json
 metadata_tags1.json
@@ -39,3 +40,6 @@ process_cleaned_json.py
 stable_requirement.txt
 test_transformer.py
 test_vllm.py
+train.py
+unwrap_model.py
+defaults.ini

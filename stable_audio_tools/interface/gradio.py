@@ -113,7 +113,7 @@ def generate_cond(
     if preview_every == 0:
         preview_every = None
     print(f'use video? {use_video}, use melody? {use_init}')
-    prompt = f"{instruments}, {genres}, {tempo.lower()}"
+    prompt = f"{instruments.lower()}, {genres.lower()}, {tempo.lower()}"
     print(prompt)
     # Return fake stereo audio
     conditioning = [{"prompt": prompt, "seconds_start": seconds_start, "seconds_total": seconds_total}] * batch_size
@@ -185,9 +185,9 @@ def generate_cond(
         updated_elements.update(new_elements)
         
         bpm_to_include = current_bpm if current_bpm else new_bpm
-        bpm_to_include = bpm_to_include.lower()
+        bpm_to_include = bpm_to_include
         updated_prompt = ', '.join(sorted(updated_elements)) + (', ' + bpm_to_include if bpm_to_include else '')
-        conditioning[0]['prompt'] = updated_prompt
+        conditioning[0]['prompt'] = updated_prompt.lower()
     print(f'updated conditioning prompt: {conditioning}')
 
     if not use_init:
