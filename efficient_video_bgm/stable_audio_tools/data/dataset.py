@@ -50,49 +50,7 @@ def generate_combined_tags(chunks, seconds_start, seconds_end):
     return combined_tags
 
 def get_custom_metadata(info, audio):
-    dataset_sources = {
-        "pixabay_music4": "C:/Users/lzhan/Downloads/pixabay_music4/metadata_tags1.json",
-        "pixabay_music3": "C:/Users/lzhan/Downloads/pixabay_music3/metadata_tags1.json",
-        "pixabay_music2": "C:/Users/lzhan/Downloads/pixabay_music2/metadata_tags1.json",
-        "pixabay_music1": "C:/Users/lzhan/Downloads/pixabay_music1/metadata_tags1.json",
-        "pixabay_music": "C:/Users/lzhan/Downloads/pixabay_music/metadata_tags1.json",
-        "bbc_sound": "/scratch/lz2807/bbc_sound/metadata_tags.json",
-        "slakh2100_1st_iter":'C:/Users/lzhan/Downloads/slakh2100_1st_iter/metadata_tags3.json',
-        "brid": '/scratch/lz2807/brid/metadata_tags.json',
-        "ballroom": '/scratch/lz2807/ballroom/audio/metadata_tags.json',
-        "guitarset": '/scratch/lz2807/guitarset/metadata_tags.json',
-        "candombe": '/scratch/lz2807/candombe/metadata_tags.json',
-        "cuidado": '/scratch/lz2807/cuidado/metadata_tags.json',
-        "gtzan_genres": '/scratch/lz2807/gtzan_genres/metadata_tags.json',
-        "hainsworth": '/scratch/lz2807/hainsworth/metadata_tags.json',
-        "maestro": '/scratch/lz2807/maestro/metadata_tags.json',
-        "slakh2100_flac_redux": "/scratch/lz2807/slakh2100_flac_redux/metadata_tags.json",
-    }
-    
-    for source, metadata_path in dataset_sources.items():
-        if source in info['path']:
-            print(f'source in info path: {source}')
-            dataset_metadata = load_metadata(metadata_path)
-            track_identifier = "/".join(info['path'].replace('\\', '/').split('/')[-2:])
-            print(track_identifier)
-            
-            if source.startswith("maestro"):
-                # track_identifier = os.path.join(*info['path'].split('/')[-1:]).replace('\\', '/')
-                # track_metadata = dataset_metadata[track_identifier]
-                # tags = track_metadata.get('tags', [])
-                # custom_metadata = {"prompt": tags}
-                prompt_str = ", ".join(dataset_metadata[track_identifier])
-                custom_metadata = {"prompt": prompt_str}
-            elif source.startswith("gtzan"):
-                prompt_str = ", ".join(dataset_metadata[track_identifier])
-                custom_metadata = {"prompt": prompt_str}
-            else: 
-                track_metadata = dataset_metadata[track_identifier]
-                tags = track_metadata.get('tags', [])
-                custom_metadata = {"prompt": tags}
-
-            print(f'custom_metdata: {custom_metadata}')    
-            return custom_metadata
+    pass
     
     raise MetadataNotFoundError(f"No suitable metadata source found for path: {info['path']}")
 

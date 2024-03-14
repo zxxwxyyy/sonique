@@ -46,3 +46,6 @@ train.py
 unwrap_model.py
 defaults.ini
 efficient_video_bgm.egg-info
+scripts
+get_10sec_video_chunk.py
+dataset_copy.py
