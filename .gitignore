@@ -1,6 +1,7 @@
 adp_cond_msdm2.json
 ckpts
 *.ckpt
+build
 adp_cond4.json
 adp_cond5.json
 adp_uncond3.json
@@ -14,7 +15,7 @@ flagged
 gradio_cached_examples
 docs
 __pycache__
-stable_audio_tools/configs
+efficient_video_bgm/configs
 wandb
 demo_videos
 stable_audio_tools.egg-info
@@ -34,6 +35,7 @@ clean_metadata_slakh_tags.py
 clean_metadata_pixabay5_tags.py
 clean_metadata1.py
 dataset_metadata.json
+metadata_tags.json
 metadata_tags1.json
 metadata_tags2.json
 process_cleaned_json.py
@@ -43,3 +45,4 @@ test_vllm.py
 train.py
 unwrap_model.py
 defaults.ini
+efficient_video_bgm.egg-info

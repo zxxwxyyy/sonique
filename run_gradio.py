@@ -1,5 +1,5 @@
-from stable_audio_tools import get_pretrained_model
-from stable_audio_tools.interface.gradio import create_ui
+from efficient_video_bgm import get_pretrained_model
+from efficient_video_bgm.interface.gradio import create_ui
 import json 
 
 import torch
