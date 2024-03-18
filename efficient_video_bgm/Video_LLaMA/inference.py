@@ -13,6 +13,7 @@ from efficient_video_bgm.Video_LLaMA.video_llama.common.dist_utils import get_ra
 from efficient_video_bgm.Video_LLaMA.video_llama.common.registry import registry
 from efficient_video_bgm.Video_LLaMA.video_llama.conversation.conversation_video import Chat, Conversation, default_conversation,SeparatorStyle,conv_llava_llama_2
 import decord
+import gc
 
 decord.bridge.set_bridge('torch')
 
@@ -61,7 +62,7 @@ def generate_prompt_from_video_description(cfg_path, gpu_id, model_type, input_f
         print("Unsupported file type")
         return 
     
-    question = "What do you see from the scene?"
+    question = "Describe the scene in detail"
     with autocast():
         chat.ask(question, chat_state)
 
@@ -69,13 +70,15 @@ def generate_prompt_from_video_description(cfg_path, gpu_id, model_type, input_f
                                img_list=img_list,
                                num_beams=num_beams,
                                temperature=temperature,
-                               max_new_tokens=300,
+                               max_new_tokens=512,
                                max_length=2000)[0]
     # print("Chatbot response:", llm_response)
 
     # clean up cache 
-    model = None
-    chat = None
+    model.cpu()
+    del model
+    gc.collect()
     torch.cuda.empty_cache()
     return llm_response
 
+# The demo stop running after some couple generations. Check loading the model mannually. 

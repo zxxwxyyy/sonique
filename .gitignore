@@ -33,6 +33,7 @@ clean_metadata_pixabay3_tags.py
 clean_metadata_pixabay4_tags.py
 clean_metadata_slakh_tags.py
 clean_metadata_pixabay5_tags.py
+clean_metadata_pixabay7_tags.py
 clean_metadata1.py
 dataset_metadata.json
 metadata_tags.json

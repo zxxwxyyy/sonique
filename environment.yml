@@ -1,0 +1,18 @@
+name: efficient-video-bgm
+channels:
+  - pytorch
+  - defaults
+
+dependencies:
+  - python==3.9.13
+  - pip
+  
+  - pip:
+  # For windows 
+    - https://download.pytorch.org/whl/cu121/torch-2.1.2%2Bcu121-cp39-cp39-win_amd64.whl#sha256=2d287804328dfb950ae6d418c9d8561d8f379237cf0710566d80efb96b6cd744
+    - https://download.pytorch.org/whl/cu121/torchvision-0.16.2%2Bcu121-cp39-cp39-win_amd64.whl#sha256=dbeb2cd41956db95b08f7848dcb8740e04bbafb1f42cf69b214849bf0615f11a
+    - https://download.pytorch.org/whl/cu121/torchaudio-2.1.2%2Bcu121-cp39-cp39-win_amd64.whl#sha256=b0f2690e3e54cef1fffaac43aff4ffc926e96b084be1a8ba624c871a4c5f8f04
+  # For Linux 
+    # - https://download.pytorch.org/whl/cu121/torchvision-0.16.2%2Bcu121-cp39-cp39-linux_x86_64.whl#sha256=aa1325a6e041603deecefc569e64b8c75a6c9a1b876e29a2def298ba8456474d
+    # - https://download.pytorch.org/whl/cu121/torchaudio-2.1.2%2Bcu121-cp39-cp39-linux_x86_64.whl#sha256=2f5b354d22061c79b87dd0c1a0841a99056d32ea8db8821fd8d673d6b077c1b2
+    # - https://download.pytorch.org/whl/cu121/torch-2.1.2%2Bcu121-cp39-cp39-linux_x86_64.whl#sha256=eaaf6907e3723c0ca6a91df5e01a7eef8cabec93120e9a50739f5a5f14a2aa46
