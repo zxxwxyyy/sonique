@@ -12,8 +12,8 @@ model:
   # If you want use LLaMA-2-chat,
   # some ckpts could be download from our provided huggingface repo
   # i.e.  https://huggingface.co/DAMO-NLP-SG/Video-LLaMA-2-13B-Finetuned
-  llama_model: "./efficient_video_bgm/Video_LLaMA/ckpts/llama-2-7b-chat-hf" # "ckpt/vicuna-13b/" or "ckpt/vicuna-7b/" or "ckpt/llama-2-7b-chat-hf"  or "ckpt/llama-2-13b-chat-hf"
-  ckpt: './efficient_video_bgm/Video_LLaMA/ckpts/VL_LLaMA_2_7B_Finetuned.pth'   # you can use our pretrained ckpt from https://huggingface.co/DAMO-NLP-SG/Video-LLaMA-2-13B-Pretrained/
+  llama_model: "./ckpts/video-llama/llama-2-7b-chat-hf" # "ckpt/vicuna-13b/" or "ckpt/vicuna-7b/" or "ckpt/llama-2-7b-chat-hf"  or "ckpt/llama-2-13b-chat-hf"
+  ckpt: './ckpts/video-llama/VL_LLaMA_2_7B_Finetuned.pth'   # you can use our pretrained ckpt from https://huggingface.co/DAMO-NLP-SG/Video-LLaMA-2-13B-Pretrained/
   equip_audio_branch: False
 
   fusion_head_layers: 2

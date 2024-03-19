@@ -78,9 +78,9 @@ def generate_cond(
         tempo,
         negative_prompt=None,
         seconds_start=0,
-        seconds_total=30,
+        seconds_total=23,
         cfg_scale=6.0,
-        steps=250,
+        steps=300,
         preview_every=None,
         seed=-1,
         sampler_type="dpmpp-2m-sde",
@@ -114,7 +114,11 @@ def generate_cond(
     if preview_every == 0:
         preview_every = None
     print(f'use video? {use_video}, use melody? {use_init}')
-    prompt = f"{instruments.lower()}, {genres.lower()}, {tempo.lower()}"
+    prompt = f"{instruments}, {genres}, {tempo}"
+
+    if prompt is not None:
+        prompt = prompt.lower()
+
     print(prompt)
     # Return fake stereo audio
     conditioning = [{"prompt": prompt, "seconds_start": seconds_start, "seconds_total": seconds_total}] * batch_size
@@ -161,13 +165,16 @@ def generate_cond(
             matched = re.search(r"\*\*Output:\*\*\s*tags:\s*([^<]+)\n", responses, re.DOTALL)
             if matched:
                 # Clean up the output tags
-                gemma_response = matched.group(1).strip()
-                gemma_response = re.sub(r"[\n\r]+---[\n\r]*", " ", gemma_response).strip()
-                gemma_response = re.sub(r"Slow Tempo \((\d+) BPM\)", r"Slow, Tempo, \1 BPM", gemma_response)
-                gemma_response = re.sub(r"Medium Tempo \((\d+) BPM\)", r"Medium, Tempo, \1 BPM", gemma_response)
-                gemma_response = re.sub(r"Fast Tempo \((\d+) BPM\)", r"Fast Tempo, \1 BPM", gemma_response)
-                print(f"Extracted Tags: {gemma_response}")
+                response = matched.group(1).strip()
+                response = re.sub(r"[\n\r]+---[\n\r]*", " ", response).strip()
+                response = re.sub(r"Slow Tempo \((\d+) BPM\)", r"Slow, Tempo, \1 BPM", response)
+                response = re.sub(r"Medium Tempo \((\d+) BPM\)", r"Medium, Tempo, \1 BPM", response)
+                response = re.sub(r"Fast Tempo \((\d+) BPM\)", r"Fast Tempo, \1 BPM", response)
+                print(f"Extracted Tags: {response}")
             else:
+                del llm
+                gc.collect()
+                torch.cuda.empty_cache()
                 raise ValueError("Tags not found or format incorrect.")
             # Clean up memory
             del llm
@@ -175,7 +182,7 @@ def generate_cond(
             torch.cuda.empty_cache()
         except ValueError as e:
             print(e)
-            # Use Qwen 14B as back up: 
+            # Use Qwen 14B as back up when gemma fails to return proper tags: 
             llm = AutoModelForCausalLM.from_pretrained(
                     "Qwen/Qwen1.5-14B-Chat",
                     device_map="auto",
@@ -191,7 +198,7 @@ def generate_cond(
                     tokenize=False,
                     add_generation_prompt=True
                 )
-            llm_inputs = tokenizer([text], return_tensors="pt").to(device)
+            llm_inputs = tokenizer([text], return_tensors="pt").to("cuda")
             generated_ids = llm.generate(
                     llm_inputs.input_ids,
                     max_new_tokens=512
@@ -205,11 +212,8 @@ def generate_cond(
             torch.cuda.empty_cache()
         current_prompt = conditioning[0]['prompt']
         current_elements = current_prompt.split(', ')
-        if gemma_response is not None:
-            new_elements = gemma_response.split(', ')
-        else:
-            current_elements = response.split(', ')
-        
+        new_elements = response.split(', ')
+                
         print(f'current element: {current_elements}')
         print(f'new elements: {new_elements}')
 
@@ -350,10 +354,10 @@ def create_sampling_ui(model_config, inpainting=False):
             use_video = gr.Checkbox(label="Use video", value=False)
             video_input = gr.Video(label="Input video(23 secs max)")
         with gr.Column(scale=6):
-            instruments = gr.Textbox(show_label=False, placeholder="Enter desired instruments. E.G: piano, drums...")
-            genres = gr.Textbox(show_label=False, placeholder="Enter desired genres. E.G: rock, jazz...")
-            tempo = gr.Textbox(show_label=False, placeholder="Enter desired tempo rate. E.G: 120 BPM")
-            negative_prompt = gr.Textbox(show_label=False, placeholder="Negative prompt - things you don't want in the output.")
+            instruments = gr.Textbox(show_label=False, placeholder="Optional: Enter desired instruments. E.G: piano, drums...")
+            genres = gr.Textbox(show_label=False, placeholder="Optional: Enter desired genres. E.G: rock, jazz...")
+            tempo = gr.Textbox(show_label=False, placeholder="Optional: Enter desired tempo rate. E.G: 120 bpm,")
+            negative_prompt = gr.Textbox(show_label=False, placeholder="Optional: Negative prompt - things you don't want in the output.")
             generate_button = gr.Button("Generate", variant='primary', scale=1)
             clear_all_button = gr.Button("Clear all")
 
