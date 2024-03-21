@@ -7,7 +7,7 @@ from torchaudio import transforms as T
 from .utils import prepare_audio
 from .sampling import sample, sample_k
 from ..stable_audio_tools.data.utils import PadCrop
-
+import gc
 import time
 
 def generate_diffusion_cond(
@@ -48,7 +48,7 @@ def generate_diffusion_cond(
         return_latents: Whether to return the latents used for generation instead of the decoded audio.
         **sampler_kwargs: Additional keyword arguments to pass to the sampler.    
     """
-
+    model.to("cuda")
     # The length of the output in audio samples 
     audio_sample_size = sample_size
 
@@ -142,6 +142,10 @@ def generate_diffusion_cond(
     if model.pretransform is not None and not return_latents:
         sampled = model.pretransform.decode(sampled)
 
+    model.to('cpu')
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
+    gc.collect()
     # Return audio
     return sampled
 

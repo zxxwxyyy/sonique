@@ -75,10 +75,8 @@ def generate_prompt_from_video_description(cfg_path, gpu_id, model_type, input_f
     # print("Chatbot response:", llm_response)
 
     # clean up cache 
-    model.cpu()
     del model
     gc.collect()
     torch.cuda.empty_cache()
     return llm_response
 
-# The demo stop running after some couple generations. Check loading the model mannually. 

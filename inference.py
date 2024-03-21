@@ -53,7 +53,8 @@ def main(args):
         use_init=args.use_init,
         init_audio=args.init_audio,
         use_video=args.use_video,
-        input_video=args.input_video
+        input_video=args.input_video,
+        llms=args.llms
     )
 
 
@@ -63,7 +64,7 @@ if __name__ == "__main__":
     parser.add_argument('--model-config', type=str, help='Path to model config', required=True)
     parser.add_argument('--ckpt-path', type=str, help='Path to model checkpoint', required=True)
     parser.add_argument('--pretrained-name', type=str, help='Optional:Name of pretrained model', required=False)
-    
+    parser.add_argument('--llms', type=str, help='Optional:Name of Large Language model', required=False, default="mistral-7b")
     parser.add_argument('--instruments', type=str, help='Optional:Input instruments condition', required=False, default="")
     parser.add_argument('--genres', type=str, help='Optional:Input genres condition', required=False, default="")
     parser.add_argument('--tempo-rate', type=str, help='Optional:Input tempo rate condition', required=False, default="")

@@ -27,6 +27,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 from moviepy.editor import VideoFileClip, AudioFileClip
 import re
 
+
 model = None
 sample_rate = 32000
 sample_size = 1920000
@@ -92,6 +93,7 @@ def generate_cond(
         init_noise_level=1.0,
         use_video=False,
         input_video=None,
+        llms="mistral-7b",
         mask_cropfrom=None,
         mask_pastefrom=None,
         mask_pasteto=None,
@@ -104,10 +106,9 @@ def generate_cond(
     ):
     import time
     start_time = time.time()
-
-    if torch.cuda.is_available():
-        torch.cuda.empty_cache()
-    gc.collect()
+    # if torch.cuda.is_available():
+    #     torch.cuda.empty_cache()
+    # gc.collect()
 
     global preview_images
     preview_images = []
@@ -129,7 +130,8 @@ def generate_cond(
         negative_conditioning = None
         
     #Get the device from the model
-    device = next(model.parameters()).device
+    # device = next(model.parameters()).device
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # seed = int(seed)
     seed = int(seed) if int(seed) != -1 else np.random.randint(0, 2**31 - 1)
@@ -140,23 +142,123 @@ def generate_cond(
     if input_video is not None:
         video_clip = VideoFileClip(input_video)
         video_duration = video_clip.duration
-        assert video_duration <= 23, f"Video duration is above 23 seconds."
+        # assert video_duration <= 23, f"Video duration is above 23 seconds."
         # print(f'video dua1: {video_duration}')
         video_des = generate_prompt_from_video_description(cfg_path="efficient_video_bgm/Video_LLaMA/eval_configs/video_llama_eval_only_vl.yaml", model_type="llama_v2", gpu_id="0", input_file=input_video)
         print(video_des)
 
-        try:
+        # Qwen
+        if llms=="qwen-7b":
+            llm = AutoModelForCausalLM.from_pretrained(
+                    "Qwen/Qwen1.5-7B-Chat",
+                    # "Qwen/Qwen1.5-14B-Chat",
+                    device_map="auto",
+                    torch_dtype=torch.float16
+                )
+            tokenizer = AutoTokenizer.from_pretrained(
+                "Qwen/Qwen1.5-7B-Chat"
+                # "Qwen/Qwen1.5-14B-Chat",
+                )
+            messages = [
+                    {"role": "system", "content": "As a music composer fluent in English, you're tasked with creating background music for video. Based on the scene described, provide only one set of tags in English that describe this background music for the video. These tags must includes instruments, music genres, and tempo (BPM). Avoid any non-English words. Example of expected output: Piano, Synths, Strings, Violin, Flute, Reflective, Slow tempo, 96 BPM"},
+                    {"role": "user", "content": str(video_des)}
+                ]
+            text = tokenizer.apply_chat_template(
+                    messages,
+                    tokenize=False,
+                    add_generation_prompt=True
+                )
+            llm_inputs = tokenizer([text], return_tensors="pt").to(llm.device)
+            generated_ids = llm.generate(
+                    llm_inputs.input_ids,
+                    max_new_tokens=512
+                )
+            generated_ids = [
+                    output_ids[len(input_ids):] for input_ids, output_ids in zip(llm_inputs.input_ids, generated_ids)
+                ]
+            response = tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
+        
+        elif llms == "qwen-14b":
+            llm = AutoModelForCausalLM.from_pretrained(
+                    "Qwen/Qwen1.5-14B-Chat",
+                    device_map="auto",
+                    torch_dtype=torch.float16
+                )
+            tokenizer = AutoTokenizer.from_pretrained(
+                "Qwen/Qwen1.5-14B-Chat"
+                )
+            messages = [
+                    {"role": "system", "content": "As a music composer fluent in English, you're tasked with creating background music for video. Based on the scene described, provide only one set of tags in English that describe this background music for the video. These tags must includes instruments, music genres, and tempo (BPM). Avoid any non-English words. Example of expected output: Piano, Synths, Strings, Violin, Flute, Reflective, Slow tempo, 96 BPM"},
+                    {"role": "user", "content": str(video_des)}
+                ]
+            text = tokenizer.apply_chat_template(
+                    messages,
+                    tokenize=False,
+                    add_generation_prompt=True
+                )
+            llm_inputs = tokenizer([text], return_tensors="pt").to(llm.device)
+            generated_ids = llm.generate(
+                    llm_inputs.input_ids,
+                    max_new_tokens=512
+                )
+            generated_ids = [
+                    output_ids[len(input_ids):] for input_ids, output_ids in zip(llm_inputs.input_ids, generated_ids)
+                ]
+            response = tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
+
+        elif llms == "mistral-7b":
+            # Mistral - 7B
+            llm = AutoModelForCausalLM.from_pretrained("mistralai/Mistral-7B-Instruct-v0.2", 
+                                                       device_map="auto", 
+                                                       torch_dtype=torch.float16
+                                                       )
+            tokenizer = AutoTokenizer.from_pretrained("mistralai/Mistral-7B-Instruct-v0.2")
+            messages = [{"role": "user", "content": f"As a music composer fluent in English, you're tasked with creating background music for video. \
+                    Based on the scene described, provide only one set of tags in English that describe this background \
+                    music for the video. These tags must include instruments, music genres, and tempo rate(e.g. 90 BPM). \
+                    Avoid any non-English words. Please provide the output in a standardized format: **Output:** tags: [Tag List], and immediately conclude with </s> without adding notes or explanations. \
+                    Input: {video_des}"}]
+            encodeds = tokenizer.apply_chat_template(messages, return_tensors="pt")
+            llm_inputs = encodeds.to(llm.device)
+            # llm.to(device)
+
+            generated_ids = llm.generate(llm_inputs, max_new_tokens=1000, do_sample=True)
+            decoded = tokenizer.batch_decode(generated_ids)
+            print(decoded[0])
+            responses = decoded[0]
+            matched = re.findall(r"\*\*Output:\*\* tags: \[([^\]]+)\]", responses)
+            if matched:
+                tags_str = matched[-1]
+                print(f'tags_str:{tags_str}')
+                if tags_str.strip().lower() == "tag list":
+                    print("Placeholder detected, applying refined logic.")
+                    pattern = r"\*\*Output:\*\* tags: \[([^\]]+)\](?=[^[]*\</s>)"
+                    matches = re.findall(pattern, responses, re.DOTALL)
+                    tags_str = matches[-1]
+                    print(f'updated tag_str:{tags_str}')
+                tags_list = [tag.strip() for tag in tags_str.split(',')]
+                response = ", ".join(tags_list)
+                response = re.sub(r"[\n\r]+---[\n\r]*", " ", response).strip()
+                response = re.sub(r"Slow Tempo \((\d+) BPM\)", r"Slow, Tempo, \1 BPM", response)
+                response = re.sub(r"Medium Tempo \((\d+) BPM\)", r"Medium, Tempo, \1 BPM", response)
+                response = re.sub(r"Fast Tempo \((\d+) BPM\)", r"Fast Tempo, \1 BPM", response)
+                print(f"Extracted Tags: {response}")
+            else:
+                print("Tags not found or format incorrect.")
+
+        elif llms == "gemma-7b":    
             # Gemma - 7B
             llm = AutoModelForCausalLM.from_pretrained("google/gemma-7b-it", 
                                                             device_map="auto", 
-                                                            torch_dtype=torch.float16)
+                                                            torch_dtype=torch.float16
+                                                            )
             tokenizer = AutoTokenizer.from_pretrained("google/gemma-7b-it")
             inputs = f"As a music composer fluent in English, you're tasked with creating background music for video. \
                 Based on the scene described, provide only one set of tags in English that describe this background \
                 music for the video. These tags must include instruments, music genres, and tempo rate(e.g. 90 BPM). \
                 Avoid any non-English words. Please provide the output in a standardized format: **Output:** tags: [Tag List], and immediately conclude with <eos> without adding notes or explanations.\
                 Inputs: {video_des}"
-            input_ids = tokenizer(inputs, return_tensors="pt").to("cuda")
+            input_ids = tokenizer(inputs, return_tensors="pt").to(llm.device)
             outputs = llm.generate(**input_ids, max_new_tokens=512)
             responses = tokenizer.decode(outputs[0])
             responses = responses.split("Inputs:")[-1]
@@ -172,44 +274,44 @@ def generate_cond(
                 response = re.sub(r"Fast Tempo \((\d+) BPM\)", r"Fast Tempo, \1 BPM", response)
                 print(f"Extracted Tags: {response}")
             else:
+                print("Tags not found or format incorrect.")
                 del llm
                 gc.collect()
                 torch.cuda.empty_cache()
-                raise ValueError("Tags not found or format incorrect.")
-            # Clean up memory
-            del llm
-            gc.collect()
-            torch.cuda.empty_cache()
-        except ValueError as e:
-            print(e)
-            # Use Qwen 14B as back up when gemma fails to return proper tags: 
-            llm = AutoModelForCausalLM.from_pretrained(
-                    "Qwen/Qwen1.5-14B-Chat",
-                    device_map="auto",
-                    torch_dtype=torch.float16
-                )
-            tokenizer = AutoTokenizer.from_pretrained("Qwen/Qwen1.5-14B-Chat")
-            messages = [
-                    {"role": "system", "content": "As a music composer fluent in English, you're tasked with creating background music for video. Based on the scene described, provide only one set of tags in English that describe this background music for the video. These tags must includes instruments, music genres, and tempo (BPM). Avoid any non-English words. Example of expected output: Piano, Synths, Strings, Violin, Flute, Reflective, Slow tempo, 96 BPM"},
-                    {"role": "user", "content": str(video_des)}
-                ]
-            text = tokenizer.apply_chat_template(
-                    messages,
-                    tokenize=False,
-                    add_generation_prompt=True
-                )
-            llm_inputs = tokenizer([text], return_tensors="pt").to("cuda")
-            generated_ids = llm.generate(
-                    llm_inputs.input_ids,
-                    max_new_tokens=512
-                )
-            generated_ids = [
-                    output_ids[len(input_ids):] for input_ids, output_ids in zip(llm_inputs.input_ids, generated_ids)
-                ]
-            response = tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
-            del llm
-            gc.collect()
-            torch.cuda.empty_cache()
+        # Clean up memory
+        del llm
+        gc.collect()
+        torch.cuda.empty_cache()
+        # except ValueError as e:
+        #     print(e)
+        #     # Use Qwen 14B as back up when gemma fails to return proper tags: 
+        #     llm = AutoModelForCausalLM.from_pretrained(
+        #             "Qwen/Qwen1.5-14B-Chat",
+        #             device_map="auto",
+        #             torch_dtype=torch.float16
+        #         )
+        #     tokenizer = AutoTokenizer.from_pretrained("Qwen/Qwen1.5-14B-Chat")
+        #     messages = [
+        #             {"role": "system", "content": "As a music composer fluent in English, you're tasked with creating background music for video. Based on the scene described, provide only one set of tags in English that describe this background music for the video. These tags must includes instruments, music genres, and tempo (BPM). Avoid any non-English words. Example of expected output: Piano, Synths, Strings, Violin, Flute, Reflective, Slow tempo, 96 BPM"},
+        #             {"role": "user", "content": str(video_des)}
+        #         ]
+        #     text = tokenizer.apply_chat_template(
+        #             messages,
+        #             tokenize=False,
+        #             add_generation_prompt=True
+        #         )
+        #     llm_inputs = tokenizer([text], return_tensors="pt").to("cuda")
+        #     generated_ids = llm.generate(
+        #             llm_inputs.input_ids,
+        #             max_new_tokens=512
+        #         )
+        #     generated_ids = [
+        #             output_ids[len(input_ids):] for input_ids, output_ids in zip(llm_inputs.input_ids, generated_ids)
+        #         ]
+        #     response = tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
+        #     del llm
+        #     gc.collect()
+        #     torch.cuda.empty_cache()
         current_prompt = conditioning[0]['prompt']
         current_elements = current_prompt.split(', ')
         new_elements = response.split(', ')
@@ -291,7 +393,7 @@ def generate_cond(
         }
     else:
         mask_args = None 
-
+    
     # Do the audio generation
     audio = generate_diffusion_cond(
         model, 
@@ -334,7 +436,7 @@ def generate_cond(
 
 
 def clear_all():
-    return "", "", "", "", 0, 23, 7.0, 300, 0, -1, "dpmpp-2m-sde", 0.03, 80, 0.2, False, None, 3, False, None
+    return "", "", "", "", 0, 23, 7.0, 300, 0, -1, "dpmpp-2m-sde", 0.03, 80, 0.2, False, None, 3, False, None, "mistral-7b"
 
 def create_sampling_ui(model_config, inpainting=False):
 
@@ -354,10 +456,11 @@ def create_sampling_ui(model_config, inpainting=False):
             use_video = gr.Checkbox(label="Use video", value=False)
             video_input = gr.Video(label="Input video(23 secs max)")
         with gr.Column(scale=6):
-            instruments = gr.Textbox(show_label=False, placeholder="Optional: Enter desired instruments. E.G: piano, drums...")
-            genres = gr.Textbox(show_label=False, placeholder="Optional: Enter desired genres. E.G: rock, jazz...")
-            tempo = gr.Textbox(show_label=False, placeholder="Optional: Enter desired tempo rate. E.G: 120 bpm,")
-            negative_prompt = gr.Textbox(show_label=False, placeholder="Optional: Negative prompt - things you don't want in the output.")
+            instruments = gr.Textbox(label="Optional: enter instruments", placeholder="Enter desired instruments. E.G: piano, drums...")
+            genres = gr.Textbox(label="Optional: enter genres", placeholder="Enter desired genres. E.G: rock, jazz...")
+            tempo = gr.Textbox(label="Optional: enter tempo rate", placeholder="Enter desired tempo rate. E.G: 120 bpm,")
+            negative_prompt = gr.Textbox(label="Optional: enter negative tags", placeholder="Negative tags - things you don't want in the output.")
+            llms = gr.Dropdown(["mistral-7b", "gemma-7b", "qwen-7b", "qwen-14b"], label="LLMs", info="Select llm to extract video description to tags. Default Mistral-7B")
             generate_button = gr.Button("Generate", variant='primary', scale=1)
             clear_all_button = gr.Button("Clear all")
 
@@ -413,7 +516,8 @@ def create_sampling_ui(model_config, inpainting=False):
                         init_audio_input,
                         init_noise_level_slider,
                         use_video,
-                        video_input
+                        video_input,
+                        llms
                     ]
 
     with gr.Row():
@@ -452,7 +556,8 @@ def create_sampling_ui(model_config, inpainting=False):
                         init_audio_input,
                         init_noise_level_slider,
                         use_video,
-                        video_input])
+                        video_input,
+                        llms])
 
     video_only_inputs = [
         use_video,
