@@ -34,6 +34,7 @@ def generate_prompt_from_video_description(cfg_path, gpu_id, model_type, input_f
     model_config = cfg.model_cfg
     model_config.device_8bit = args.gpu_id
     model_cls = registry.get_model_class(model_config.arch)
+
     model = model_cls.from_config(model_config).to('cuda:{}'.format(args.gpu_id))
     model.eval()
     vis_processor_cfg = cfg.datasets_cfg.webvid.vis_processor.train
