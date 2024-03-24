@@ -669,11 +669,11 @@ def create_sampling_ui(model_config, inpainting=False):
         init_audio_input
     ]
     video_examples = gr.Examples(examples=[
-        [True, "./efficient_video_bgm/Video_LLaMA/demo_videos/Better_Call_Saul2.mp4", False, None],
-        [True, "./efficient_video_bgm/Video_LLaMA/demo_videos/Better_Call_Saul4.mp4", False, None],
-        [True, "./efficient_video_bgm/Video_LLaMA/demo_videos/breakingbad_4.mp4", False, None],
-        [True, "./efficient_video_bgm/Video_LLaMA/demo_videos/breakingbad_6.mp4", False, None],
-        [True, "./efficient_video_bgm/Video_LLaMA/demo_videos/friends_2.mp4", False, None],
+        [True, "./demo_videos/Better_Call_Saul2.mp4", False, None],
+        [True, "./demo_videos/Better_Call_Saul4.mp4", False, None],
+        [True, "./demo_videos/breakingbad_4.mp4", False, None],
+        [True, "./demo_videos/breakingbad_6.mp4", False, None],
+        [True, "./demo_videos/friends_2.mp4", False, None],
         ], 
                            inputs=video_only_inputs,
                            outputs=[audio_output, 
@@ -691,8 +691,8 @@ def create_sampling_ui(model_config, inpainting=False):
         video_input
     ]
     video_melody_examples = gr.Examples(examples=[
-        [True,"./efficient_video_bgm/Video_LLaMA/demo_videos/000590.wav", 3, True, "./efficient_video_bgm/Video_LLaMA/demo_videos/Better_Call_Saul2.mp4"],
-        [True,"./efficient_video_bgm/Video_LLaMA/demo_videos/1908-1.wav", 3, True, "./efficient_video_bgm/Video_LLaMA/demo_videos/breakingbad_6.mp4"],
+        [True,"./demo_videos/000590.wav", 3, True, "./demo_videos/Better_Call_Saul2.mp4"],
+        [True,"./demo_videos/1908-1.wav", 3, True, "./demo_videos/breakingbad_6.mp4"],
         ], 
                            inputs=video_with_melody,
                            outputs=[audio_output, 
@@ -737,8 +737,8 @@ def create_sampling_ui(model_config, inpainting=False):
         video_input
     ]
     prompt_melody_examples = gr.Examples(examples=[
-        ["Guitar, Piano, Bass", "Jazz", "130 bpm", True, "./efficient_video_bgm/Video_LLaMA/demo_videos/drums.wav", 5, False, None],
-        ["Piano", "Ambient, Slow", "70 bpm", True, "./efficient_video_bgm/Video_LLaMA/demo_videos/1908-4.wav", 3, False, None],
+        ["Guitar, Piano, Bass", "Jazz", "130 bpm", True, "./demo_videos/drums.wav", 5, False, None],
+        ["Piano", "Ambient, Slow", "70 bpm", True, "./demo_videos/1908-4.wav", 3, False, None],
         ], 
                            inputs=prompt_melody_input,
                            outputs=[audio_output, 
@@ -769,13 +769,10 @@ def create_txt2audio_ui(model_config):
     with gr.Blocks() as ui:
         gr.Markdown(
         """
-        <h1 align="center">Video-Background-Music: Efficient Audio Generation Model that Generates \
-            Background Music for Your Video. </h1>
+        <h1 align="center">Efficient-Video-BGM-Generation: Efficient Video Background Music Generation for Your Video. </h1>
 
-        <h5 align="center">Introduction: Video-Background-Music is a multi-model that designed to help \
-        music composers and video editors to generates 44.1Khz background music. User may enter \
-        any desired instruments, genres, and tempo rate. Or they can just input a video(up to 23 seconds) \
-        and let the model do the job. 
+        <h5 align="center">Introduction: A Multi-model tool that designed to help video editors generate background music on video & tv series' transition scene. \
+            In addition, it can be used by music composers to generate conditioned music base on instruments, genres, tempo rate, and even specific melodies. 
         </h5> 
 
         """

@@ -6,7 +6,65 @@ sdk_version: 3.42.0
 ---
 # Efficient Video BGM Generation (In progress)
 
-A Multi-model tool that designed to help video editors generate background music on video & tv series' transition scene. In addition, it can be used by music composers to generate conditioned music base on instruments, genres, and tempo rate. 
+A Multi-model tool that designed to help video editors generate background music on video & tv series' transition scene. In addition, it can be used by music composers to generate conditioned music base on instruments, genres, tempo rate, and even specific melodies. 
+
+# Install 
+1. Clone this repo 
+2. Create a conda environment: 
+```bash
+conda conda env create -f environment.yml
+```
+3. Activate the environment, navigate to the root, and run:
+```bash
+pip install .
+```
+4. After installation, you may run the demo with UI interface:
+```bash
+python run_gradio.py --model-config best_model.json --ckpt-path ./ckpts/stable_ep=121.ckpt
+```
+5. To run the demo without interface:
+```bash
+python inference.py --model-config best_model.json --ckpt-path ./ckpts/stable_ep=121.ckpt
+```
+### Additional inference flags:
+- `--use-video`:
+    - Use input video as condition
+    - *Default*: False
+- `--input-video`:
+    - Path to input video 
+    - *Default*: None
+- `--use-init`:
+    - Use melody condition
+    - *Default*: False
+- `init-audio`:
+    - Melody condition path
+    - *Default*: None
+- `--llms`:
+    - Selection of the name of Large Language Model to extract video description to tags
+    - *Default*: Mistral 7B
+- `--instruments`:
+    - Input instrument condition
+    - *Default*: None
+- `--genres`:
+    - Input genre condition
+    - *Default*: None
+- `--tempo-rate`:
+    - Input tempo rate condition
+    - *Default*: None
+
+# Video-to-music-generation
+Efficient-video-bgm is a multi-model tool leveraging on [stable_audio_tools](https://github.com/Stability-AI/stable-audio-tools), [Video_LLaMA](https://github.com/DAMO-NLP-SG/Video-LLaMA), and popular LLMs from Huggingface. 
+
+![t2i](demo_videos/assets/efficient-video-bgm.png)
+
+Video description, seconds_start and seconds_total are extracted from the input video. I use [Video_LLaMA](https://github.com/DAMO-NLP-SG/Video-LLaMA) to extract video description from the video. Then it will be pass to LLMs to converted them into tags that describe the background music. For the LLMs currently support: 
+- Mistrial 7B (default)
+- Qwen 7B, 14B-4bit
+- LLaMA 7B, 13B-4bit (You will need to get authenticate from [Meta](https://huggingface.co/meta-llama/Llama-2-7b-chat-hf))
+- Gemma 7B (You will need to get authenticate from [Google](https://huggingface.co/google/gemma-7b-it))
+
+# Text-to-music-generation
+Instead of using video, you may also mannually enter instruments, genres and tempo rate to generate music. 
 
 # In-progress: 
 - Finetuning the model 
@@ -14,4 +72,3 @@ A Multi-model tool that designed to help video editors generate background music
 - Adding support for sound effect 
 - Improve the generation effiiency. 
 
-The backbone model was base on [stable_audio_tools](https://github.com/Stability-AI/stable-audio-tools), [Video_LLaMA](https://github.com/DAMO-NLP-SG/Video-LLaMA), and [gemma](https://huggingface.co/google/gemma-7b-it).
