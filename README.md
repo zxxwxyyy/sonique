@@ -4,9 +4,20 @@ app_file: run_gradio.py
 sdk: gradio
 sdk_version: 3.42.0
 ---
+
 # Efficient Video BGM Generation (In progress)
 
 A Multi-model tool that designed to help video editors generate background music on video & tv series' transition scene. In addition, it can be used by music composers to generate conditioned music base on instruments, genres, tempo rate, and even specific melodies. 
+
+# Table of contents
+- [Demo](#demo)
+- [Install](#install)
+- [Model Checkpoint](#model-checkpoint)
+- [Video-to-music-generation](#video-to-music-generation)
+- [Text-to-music-generation](#text-to-music-generation)
+
+# Demo
+Coming soon
 
 # Install 
 1. Clone this repo 
@@ -51,6 +62,16 @@ python inference.py --model-config best_model.json --ckpt-path ./ckpts/stable_ep
 - `--tempo-rate`:
     - Input tempo rate condition
     - *Default*: None
+  
+### Model Checkpoint
+Pretrained model can be download [here](). Please download, unzip, and save in the root of this project. 
+```bash
+efficient-video-bgm-generation/
+├── ckpts/
+│   ├── .../
+├── run_gradio.py/
+...
+```
 
 # Video-to-music-generation
 Efficient-video-bgm is a multi-model tool leveraging on [stable_audio_tools](https://github.com/Stability-AI/stable-audio-tools), [Video_LLaMA](https://github.com/DAMO-NLP-SG/Video-LLaMA), and popular LLMs from Huggingface. 

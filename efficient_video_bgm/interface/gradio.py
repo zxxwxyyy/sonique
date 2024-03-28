@@ -143,7 +143,9 @@ def generate_cond(
     if input_video is not None:
         video_clip = VideoFileClip(input_video)
         video_duration = video_clip.duration
-        assert video_duration <= 23, f"Video duration is above 23 seconds."
+        if video_duration > 23:
+            video_clip = video_clip.subclip(0, 23)
+        # assert video_duration <= 23, f"Video duration is above 23 seconds."
         # print(f'video dua1: {video_duration}')
         video_des = generate_prompt_from_video_description(cfg_path="efficient_video_bgm/Video_LLaMA/eval_configs/video_llama_eval_only_vl.yaml", model_type="llama_v2", gpu_id="0", input_file=input_video)
         print(video_des)
@@ -219,7 +221,7 @@ def generate_cond(
             messages = [{"role": "user", "content": f"As a music composer fluent in English, you're tasked with creating background music for video. \
                     Based on the scene described, provide only one set of tags in English that describe this background \
                     music for the video. These tags must include instruments, music genres, and tempo rate(e.g. 90 BPM). \
-                    Avoid any non-English words. Please return the tags in the following JSON structure: {{'tags': ['tag1', 'tag2', 'tag3']}} \
+                    Avoid any non-English words. Please return the tags in the following JSON structure: {{\'tags\': [\'tag1\', \'tag2\', \'tag3\']}} \
                     Input: {video_des}"}]
             encodeds = tokenizer.apply_chat_template(messages, return_tensors="pt")
             llm_inputs = encodeds.to(llm.device)
@@ -261,7 +263,7 @@ def generate_cond(
             inputs = f"As a music composer fluent in English, you're tasked with creating background music for video. \
                  Based on the scene described, provide only one set of tags in English that describe this background \
                  music for the video. These tags must include instruments, music genres, and tempo rate(e.g. 90 BPM). \
-                 Avoid any non-English words. Please return the tags in the following JSON structure: {{'tags': ['tag1', 'tag2', 'tag3']}} \
+                 Avoid any non-English words. Please return the tags in the following JSON structure: {{\'tags\': [\'tag1\', \'tag2\', \'tag3\']}} \
                  Inputs: {video_des}"
             input_ids = tokenizer(inputs, return_tensors="pt").to(llm.device)
             outputs = llm.generate(**input_ids, max_new_tokens=512)
@@ -298,7 +300,7 @@ def generate_cond(
                                 Based on the scene described, provide only one set of tags in English that describe this background music for the video. \
                                 These tags must includes instruments, music genres, and tempo (BPM). Avoid any non-English words. \
                                 Example of expected output: Piano, Synths, Strings, Violin, Flute, Reflective, Slow tempo, 96 BPM \
-                                Please return the tags in the following JSON structure: {{'tags': ['tag1', 'tag2', 'tag3']}}"},
+                                Please return the tags in the following JSON structure: {{\'tags\': [\'tag1\', \'tag2\', \'tag3\']}}"},
                                 {"role": "user", "content": str(video_des)}
                             ]
             text = tokenizer.apply_chat_template(
@@ -347,7 +349,7 @@ def generate_cond(
                          Based on the scene described, provide only one set of tags in English that describe this background music for the video. \
                          These tags must includes instruments, music genres, and tempo (BPM). Avoid any non-English words. \
                          Example of expected output: Piano, Synths, Strings, Violin, Flute, Reflective, Slow tempo, 96 BPM \
-                         Please return the tags in the following JSON structure: {{'tags': ['tag1', 'tag2', 'tag3']}}"},
+                         Please return the tags in the following JSON structure: {{\'tags\': [\'tag1\', \'tag2\', \'tag3\']}}"},
                          {"role": "user", "content": str(video_des)}
                             ]
             text = tokenizer.apply_chat_template(
@@ -569,7 +571,7 @@ def create_sampling_ui(model_config, inpainting=False):
 
     with gr.Row(equal_height=False):
         with gr.Column():
-            with gr.Accordion("Use melody condition", open=False):
+            with gr.Accordion("Optional: use melody condition", open=False):
                 with gr.Row():
                     init_audio_checkbox = gr.Checkbox(label="Use melody condition")
                     init_audio_input = gr.Audio(label="Melody condition audio")
