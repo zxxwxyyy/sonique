@@ -1,5 +1,5 @@
-from efficient_video_bgm import get_pretrained_model
-from efficient_video_bgm.interface.gradio import create_ui
+from sonique import get_pretrained_model
+from sonique.interface.gradio import create_ui
 import json 
 
 import torch

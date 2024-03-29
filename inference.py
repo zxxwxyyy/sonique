@@ -15,15 +15,15 @@ from torch.nn import functional as F
 from torchaudio import transforms as T
 from torch.cuda.amp import autocast
 
-from efficient_video_bgm.inference.generation import generate_diffusion_cond
-from efficient_video_bgm.inference.priors import generate_mono_to_stereo
-from efficient_video_bgm.stable_audio_tools.models.factory import create_model_from_config
-from efficient_video_bgm.stable_audio_tools.models.pretrained import get_pretrained_model
-from efficient_video_bgm.stable_audio_tools.models.utils import load_ckpt_state_dict
-from efficient_video_bgm.inference.utils import prepare_audio
-from efficient_video_bgm.stable_audio_tools.training.utils import copy_state_dict
-from efficient_video_bgm.Video_LLaMA.inference import generate_prompt_from_video_description
-from efficient_video_bgm.interface.gradio import load_model, generate_cond
+from sonique.inference.generation import generate_diffusion_cond
+from sonique.inference.priors import generate_mono_to_stereo
+from sonique.stable_audio_tools.models.factory import create_model_from_config
+from sonique.stable_audio_tools.models.pretrained import get_pretrained_model
+from sonique.stable_audio_tools.models.utils import load_ckpt_state_dict
+from sonique.inference.utils import prepare_audio
+from sonique.stable_audio_tools.training.utils import copy_state_dict
+from sonique.Video_LLaMA.inference import generate_prompt_from_video_description
+from sonique.interface.gradio import load_model, generate_cond
 
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from moviepy.editor import VideoFileClip, AudioFileClip

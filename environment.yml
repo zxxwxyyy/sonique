@@ -1,4 +1,4 @@
-name: efficient-video-bgm
+name: sonique
 channels:
   - pytorch
   - defaults

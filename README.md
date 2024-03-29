@@ -1,11 +1,11 @@
----
+<!-- ---
 title: efficient-video-bgm
 app_file: run_gradio.py
 sdk: gradio
 sdk_version: 3.42.0
----
+--- -->
 
-# Efficient Video BGM Generation (In progress)
+# SONIQUE: Efficient Video Background Music Generation (In progress)
 
 A Multi-model tool that designed to help video editors generate background music on video & tv series' transition scene. In addition, it can be used by music composers to generate conditioned music base on instruments, genres, tempo rate, and even specific melodies. 
 
@@ -23,7 +23,7 @@ Coming soon
 1. Clone this repo 
 2. Create a conda environment: 
 ```bash
-conda conda env create -f environment.yml
+conda env create -f environment.yml
 ```
 3. Activate the environment, navigate to the root, and run:
 ```bash
