@@ -1,0 +1,3 @@
+instruments,genres,tempo,negative_prompt,seconds_start_slider,seconds_total_slider,cfg_scale_slider,steps_slider,preview_every_slider,seed_textbox,sampler_type_dropdown,sigma_min_slider,sigma_max_slider,cfg_rescale_slider,init_audio_checkbox,init_audio_input,init_noise_level_slider,use_video,video_input
+"","","",None,0,10,7,300,0,-1,"dpmpp-2m-sde",0.03,80,0.2,false,"",3,TRUE,Better_Call_Saul2.mp4
+"","","",None,0,10,7,300,0,-1,"dpmpp-2m-sde",0.03,80,0.2,false,"",3,TRUE,Better_Call_Saul3.mp4

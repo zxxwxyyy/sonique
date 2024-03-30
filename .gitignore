@@ -17,8 +17,8 @@ docs
 __pycache__
 efficient_video_bgm/configs
 wandb
-demo_videos
-stable_audio_tools.egg-info
+./sonique/Video_LLaMA/demo_videos
+sonique.egg-info
 clean_metadata_brid_tags.py
 clean_metadata_cuidado_tags.py
 clean_metadata_candombe_tags.py

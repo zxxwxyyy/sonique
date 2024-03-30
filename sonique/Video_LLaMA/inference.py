@@ -26,13 +26,14 @@ from sonique.Video_LLaMA.video_llama.tasks import *
 decord.bridge.set_bridge('torch')
   
 
-def generate_prompt_from_video_description(cfg_path, gpu_id, model_type, input_file, num_beams=1, temperature=1.0):
+def generate_prompt_from_video_description(cfg_path, gpu_id, model_type, input_file, num_beams=1, temperature=1.0, low_resource=False):
     # initialize model
     args = argparse.Namespace(cfg_path=cfg_path, gpu_id=gpu_id, model_type=model_type, options=[])
     cfg = Config(args)
 
     model_config = cfg.model_cfg
     model_config.device_8bit = args.gpu_id
+    model_config.low_resource = low_resource
     model_cls = registry.get_model_class(model_config.arch)
 
     model = model_cls.from_config(model_config).to('cuda:{}'.format(args.gpu_id))

@@ -54,7 +54,8 @@ def main(args):
         init_audio=args.init_audio,
         use_video=args.use_video,
         input_video=args.input_video,
-        llms=args.llms
+        llms=args.llms,
+        low_resource=args.low_resource
     )
 
 
@@ -71,8 +72,8 @@ if __name__ == "__main__":
     parser.add_argument('--use-init', type=bool, help='Optional:Use melody condition', required=False, default=False)
     parser.add_argument('--init-audio', type=str, help='Optional:Melody condition path', required=False, default=None)
     parser.add_argument('--use-video', type=bool, help='Optional:Use input video condition', required=False, default=False)
-    parser.add_argument('--input-video', type=str, help='Optional:video condition path', required=False, default=None)
-
+    parser.add_argument('--input-video', type=str, help='Optional:Video condition path', required=False, default=None)
+    parser.add_argument('--low-resource', type=bool, help='Optional: run on low resource mode', required=False, default=True)
     args = parser.parse_args()
     
     main(args)    

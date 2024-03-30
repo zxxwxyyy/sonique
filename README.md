@@ -53,6 +53,9 @@ python inference.py --model-config best_model.json --ckpt-path ./ckpts/stable_ep
 - `--llms`:
     - Selection of the name of Large Language Model to extract video description to tags
     - *Default*: Mistral 7B
+- `--low-resource`:
+    - If set to True, models from video -> tags stage will run in 4-bit. Only set it to False if you have enough GPU memory.
+    - *Default*: True
 - `--instruments`:
     - Input instrument condition
     - *Default*: None
@@ -76,12 +79,12 @@ efficient-video-bgm-generation/
 # Video-to-music-generation
 Efficient-video-bgm is a multi-model tool leveraging on [stable_audio_tools](https://github.com/Stability-AI/stable-audio-tools), [Video_LLaMA](https://github.com/DAMO-NLP-SG/Video-LLaMA), and popular LLMs from Huggingface. 
 
-![t2i](demo_videos/assets/efficient-video-bgm.png)
+![t2i](demo_videos/assets/sonique.png)
 
-Video description, seconds_start and seconds_total are extracted from the input video. I use [Video_LLaMA](https://github.com/DAMO-NLP-SG/Video-LLaMA) to extract video description from the video. Then it will be pass to LLMs to converted them into tags that describe the background music. For the LLMs currently support: 
+Video description is extracted from the input video. I use [Video_LLaMA](https://github.com/DAMO-NLP-SG/Video-LLaMA) to extract video description from the video. Then it will be pass to LLMs to converted them into tags that describe the background music. For the LLMs currently support: 
 - Mistrial 7B (default)
-- Qwen 7B, 14B-4bit
-- LLaMA 7B, 13B-4bit (You will need to get authenticate from [Meta](https://huggingface.co/meta-llama/Llama-2-7b-chat-hf))
+- Qwen 14B
+- LLaMA2 13B (You will need to get authenticate from [Meta](https://huggingface.co/meta-llama/Llama-2-7b-chat-hf))
 - Gemma 7B (You will need to get authenticate from [Google](https://huggingface.co/google/gemma-7b-it))
 
 # Text-to-music-generation

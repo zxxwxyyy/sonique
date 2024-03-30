@@ -94,6 +94,7 @@ def generate_cond(
         use_video=False,
         input_video=None,
         llms="mistral-7b",
+        low_resource=True,
         mask_cropfrom=None,
         mask_pastefrom=None,
         mask_pasteto=None,
@@ -106,9 +107,6 @@ def generate_cond(
     ):
     import time
     start_time = time.time()
-    # if torch.cuda.is_available():
-    #     torch.cuda.empty_cache()
-    # gc.collect()
 
     global preview_images
     preview_images = []
@@ -132,9 +130,7 @@ def generate_cond(
     #Get the device from the model
     # device = next(model.parameters()).device
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    # device = "cuda"
 
-    # seed = int(seed)
     seed = int(seed) if int(seed) != -1 else np.random.randint(0, 2**31 - 1)
     if not use_video:
         input_video = None
@@ -145,19 +141,27 @@ def generate_cond(
         video_duration = video_clip.duration
         if video_duration > 23:
             video_clip = video_clip.subclip(0, 23)
-        # assert video_duration <= 23, f"Video duration is above 23 seconds."
-        # print(f'video dua1: {video_duration}')
-        video_des = generate_prompt_from_video_description(cfg_path="sonique/Video_LLaMA/eval_configs/video_llama_eval_only_vl.yaml", model_type="llama_v2", gpu_id="0", input_file=input_video)
+        video_des = generate_prompt_from_video_description(cfg_path="sonique/Video_LLaMA/eval_configs/video_llama_eval_only_vl.yaml", model_type="llama_v2", gpu_id="0", input_file=input_video, low_resource=low_resource)
         print(video_des)
 
         # Qwen
         if llms=="qwen-7b":
-            llm = AutoModelForCausalLM.from_pretrained(
-                    "Qwen/Qwen1.5-7B-Chat",
-                    # "Qwen/Qwen1.5-14B-Chat",
-                    device_map="auto",
-                    torch_dtype=torch.float16,
-                )
+            if low_resource:
+                llm = AutoModelForCausalLM.from_pretrained(
+                        "Qwen/Qwen1.5-7B-Chat",
+                        # "Qwen/Qwen1.5-14B-Chat",
+                        device_map="auto",
+                        torch_dtype=torch.float16,
+                        low_cpu_mem_usage=True,
+                        load_in_4bit=True
+                    )
+            else:
+                llm = AutoModelForCausalLM.from_pretrained(
+                        "Qwen/Qwen1.5-7B-Chat",
+                        # "Qwen/Qwen1.5-14B-Chat",
+                        device_map="cuda",
+                        torch_dtype=torch.float16,
+                    )
             tokenizer = AutoTokenizer.from_pretrained(
                 "Qwen/Qwen1.5-7B-Chat"
                 # "Qwen/Qwen1.5-14B-Chat",
@@ -181,14 +185,21 @@ def generate_cond(
                 ]
             response = tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
         
-        elif llms == "qwen-14b-4bit":
-            llm = AutoModelForCausalLM.from_pretrained(
-                    "Qwen/Qwen1.5-14B-Chat",
-                    device_map="cuda",
-                    torch_dtype=torch.float16,
-                    low_cpu_mem_usage=True,
-                    load_in_4bit=True
-                )
+        elif llms == "qwen-14b":
+            if low_resource:
+                llm = AutoModelForCausalLM.from_pretrained(
+                        "Qwen/Qwen1.5-14B-Chat",
+                        device_map="auto",
+                        torch_dtype=torch.float16,
+                        low_cpu_mem_usage=True,
+                        load_in_4bit=True
+                    )
+            else:
+                llm = AutoModelForCausalLM.from_pretrained(
+                        "Qwen/Qwen1.5-14B-Chat",
+                        device_map="cuda",
+                        torch_dtype=torch.float16,
+                    )
             tokenizer = AutoTokenizer.from_pretrained(
                 "Qwen/Qwen1.5-14B-Chat"
                 )
@@ -213,10 +224,18 @@ def generate_cond(
 
         elif llms == "mistral-7b":
             # Mistral - 7B
-            llm = AutoModelForCausalLM.from_pretrained("mistralai/Mistral-7B-Instruct-v0.2", 
-                                                       device_map="cuda", 
-                                                       torch_dtype=torch.float16,
-                                                       )
+            if low_resource:
+                llm = AutoModelForCausalLM.from_pretrained("mistralai/Mistral-7B-Instruct-v0.2", 
+                                                        device_map="auto", 
+                                                        torch_dtype=torch.float16,
+                                                        low_cpu_mem_usage=True,
+                                                        load_in_4bit=True
+                                                        )
+            else:
+                llm = AutoModelForCausalLM.from_pretrained("mistralai/Mistral-7B-Instruct-v0.2", 
+                                                        device_map="cuda", 
+                                                        torch_dtype=torch.float16
+                                                        )
             tokenizer = AutoTokenizer.from_pretrained("mistralai/Mistral-7B-Instruct-v0.2")
             messages = [{"role": "user", "content": f"As a music composer fluent in English, you're tasked with creating background music for video. \
                     Based on the scene described, provide only one set of tags in English that describe this background \
@@ -250,16 +269,20 @@ def generate_cond(
 
         elif llms == "gemma-7b":    
             # Gemma - 7B
-            llm = AutoModelForCausalLM.from_pretrained("google/gemma-7b-it", 
-                                                            device_map="cuda", 
-                                                            torch_dtype=torch.float16,
-                                                            )
+            if low_resource:
+                llm = AutoModelForCausalLM.from_pretrained("google/gemma-7b-it", 
+                                                                device_map="auto", 
+                                                                torch_dtype=torch.float16,
+                                                                low_cpu_mem_usage=True,
+                                                                load_in_4bit=True
+                                                                )
+            else:
+                llm = AutoModelForCausalLM.from_pretrained("google/gemma-7b-it", 
+                                                                device_map="cuda", 
+                                                                torch_dtype=torch.float16
+                                                                )
             tokenizer = AutoTokenizer.from_pretrained("google/gemma-7b-it")
-            # inputs = f"As a music composer fluent in English, you're tasked with creating background music for video. \
-            #     Based on the scene described, provide only one set of tags in English that describe this background \
-            #     music for the video. These tags must include instruments, music genres, and tempo rate(e.g. 90 BPM). \
-            #     Avoid any non-English words. Please provide the output in a standardized format: **Output:** tags: [Tag List], and immediately conclude with <eos> without adding notes or explanations.\
-            #     Inputs: {video_des}"
+
             inputs = f"As a music composer fluent in English, you're tasked with creating background music for video. \
                  Based on the scene described, provide only one set of tags in English that describe this background \
                  music for the video. These tags must include instruments, music genres, and tempo rate(e.g. 90 BPM). \
@@ -289,11 +312,20 @@ def generate_cond(
                 print("Failed to extract JSON string from response.")
 
         elif llms == "llama-7b":
-            llm = AutoModelForCausalLM.from_pretrained(
-                    "meta-llama/Llama-2-7b-chat-hf",
-                    device_map="cuda",
-                    torch_dtype=torch.float16,
-                )
+            if low_resource:
+                llm = AutoModelForCausalLM.from_pretrained(
+                        "meta-llama/Llama-2-7b-chat-hf",
+                        device_map="auto",
+                        torch_dtype=torch.float16,
+                        low_cpu_mem_usage=True,
+                        load_in_4bit=True
+                    )
+            else:
+                llm = AutoModelForCausalLM.from_pretrained(
+                        "meta-llama/Llama-2-7b-chat-hf",
+                        device_map="cuda",
+                        torch_dtype=torch.float16
+                    )
             tokenizer = AutoTokenizer.from_pretrained("meta-llama/Llama-2-7b-chat-hf")
             messages = [
                                 {"role": "system", "content": "As a music composer fluent in English, you're tasked with creating background music for video. \
@@ -335,14 +367,21 @@ def generate_cond(
             else:
                 print("Failed to extract JSON string from response.")
 
-        elif llms == "llama-13b-4bit":
-            llm = AutoModelForCausalLM.from_pretrained(
-                    "meta-llama/Llama-2-13b-chat-hf",
-                    device_map="cuda",
-                    torch_dtype=torch.float16,
-                    low_cpu_mem_usage=True,
-                    load_in_4bit=True
-                )
+        elif llms == "llama-13b":
+            if low_resource:
+                llm = AutoModelForCausalLM.from_pretrained(
+                        "meta-llama/Llama-2-13b-chat-hf",
+                        device_map="auto",
+                        torch_dtype=torch.float16,
+                        low_cpu_mem_usage=True,
+                        load_in_4bit=True
+                    )
+            else:
+                llm = AutoModelForCausalLM.from_pretrained(
+                        "meta-llama/Llama-2-13b-chat-hf",
+                        device_map="cuda",
+                        torch_dtype=torch.float16
+                    )
             tokenizer = AutoTokenizer.from_pretrained("meta-llama/Llama-2-13b-chat-hf")
             messages = [
                         {"role": "system", "content": "As a music composer fluent in English, you're tasked with creating background music for video. \
@@ -387,36 +426,7 @@ def generate_cond(
         del llm
         gc.collect()
         torch.cuda.empty_cache()
-        # except ValueError as e:
-        #     print(e)
-        #     # Use Qwen 14B as back up when gemma fails to return proper tags: 
-        #     llm = AutoModelForCausalLM.from_pretrained(
-        #             "Qwen/Qwen1.5-14B-Chat",
-        #             device_map="auto",
-        #             torch_dtype=torch.float16
-        #         )
-        #     tokenizer = AutoTokenizer.from_pretrained("Qwen/Qwen1.5-14B-Chat")
-        #     messages = [
-        #             {"role": "system", "content": "As a music composer fluent in English, you're tasked with creating background music for video. Based on the scene described, provide only one set of tags in English that describe this background music for the video. These tags must includes instruments, music genres, and tempo (BPM). Avoid any non-English words. Example of expected output: Piano, Synths, Strings, Violin, Flute, Reflective, Slow tempo, 96 BPM"},
-        #             {"role": "user", "content": str(video_des)}
-        #         ]
-        #     text = tokenizer.apply_chat_template(
-        #             messages,
-        #             tokenize=False,
-        #             add_generation_prompt=True
-        #         )
-        #     llm_inputs = tokenizer([text], return_tensors="pt").to("cuda")
-        #     generated_ids = llm.generate(
-        #             llm_inputs.input_ids,
-        #             max_new_tokens=512
-        #         )
-        #     generated_ids = [
-        #             output_ids[len(input_ids):] for input_ids, output_ids in zip(llm_inputs.input_ids, generated_ids)
-        #         ]
-        #     response = tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
-        #     del llm
-        #     gc.collect()
-        #     torch.cuda.empty_cache()
+     
         current_prompt = conditioning[0]['prompt']
         current_elements = current_prompt.split(', ')
         new_elements = response.split(', ')
@@ -543,6 +553,10 @@ def generate_cond(
 def clear_all():
     return "", "", "", "", 0, 23, 7.0, 300, 0, -1, "dpmpp-2m-sde", 0.03, 80, 0.2, False, None, 3, False, None, "mistral-7b"
 
+case_note_upload = ("""
+### Some examples provided at the bottom of the page. Click on them to try them out!
+""")
+
 def create_sampling_ui(model_config, inpainting=False):
 
     model_conditioning_config = model_config["model"].get("conditioning", None)
@@ -560,18 +574,26 @@ def create_sampling_ui(model_config, inpainting=False):
         with gr.Column(scale=6):
             use_video = gr.Checkbox(label="Use video", value=False)
             video_input = gr.Video(label="Input video(23 secs max)")
+            gr.Markdown(case_note_upload)
         with gr.Column(scale=6):
             instruments = gr.Textbox(label="Optional: enter instruments", placeholder="Enter desired instruments. E.G: piano, drums...")
             genres = gr.Textbox(label="Optional: enter genres", placeholder="Enter desired genres. E.G: rock, jazz...")
             tempo = gr.Textbox(label="Optional: enter tempo rate", placeholder="Enter desired tempo rate. E.G: 120 bpm,")
             negative_prompt = gr.Textbox(label="Optional: enter negative tags", placeholder="Negative tags - things you don't want in the output.")
-            llms = gr.Dropdown(["mistral-7b", "gemma-7b", "llama-7b", "qwen-7b", "qwen-14b-4bit", "llama-13b-4bit"], label="LLMs", info="Select llm to extract video description to tags. Default Mistral-7B")
+            llms = gr.Dropdown(["mistral-7b", 
+                                "gemma-7b", 
+                                # "llama-7b", 
+                                # "qwen-7b", 
+                                "qwen-14b", 
+                                "llama-13b"], 
+                                label="LLMs", info="Select llm to extract video description to tags. Default Mistral-7B")
+            low_resource = gr.Checkbox(label="Optional: To run the model in low_resource mode", value=True)
             generate_button = gr.Button("Generate", variant='primary', scale=1)
             clear_all_button = gr.Button("Clear all")
 
     with gr.Row(equal_height=False):
         with gr.Column():
-            with gr.Accordion("Optional: use melody condition", open=False):
+            with gr.Accordion("Optional: use melody condition(inpaint)", open=False):
                 with gr.Row():
                     init_audio_checkbox = gr.Checkbox(label="Use melody condition")
                     init_audio_input = gr.Audio(label="Melody condition audio")
@@ -622,7 +644,8 @@ def create_sampling_ui(model_config, inpainting=False):
                         init_noise_level_slider,
                         use_video,
                         video_input,
-                        llms
+                        llms,
+                        low_resource
                     ]
 
     with gr.Row():
@@ -773,11 +796,27 @@ def create_txt2audio_ui(model_config):
     with gr.Blocks() as ui:
         gr.Markdown(
         """
-        <h1 align="center">Efficient-Video-BGM-Generation: Efficient Video Background Music Generation for Your Video. </h1>
+        <h1 align="center">SONIQUE: Efficient Video Background Music Generation</h1>
 
-        <h5 align="center">Introduction: A Multi-model tool that designed to help video editors generate background music on video & tv series' transition scene. \
-            In addition, it can be used by music composers to generate conditioned music base on instruments, genres, tempo rate, and even specific melodies. 
+        <h5 align="center">A Multi-model tool that designed to help video editors \
+            generate background music on video & tv series' transition scene. \
+            In addition, it can be used by music composers to generate conditioned \
+            music base on instruments, genres, tempo rate, and even specific melodies. 
         </h5> 
+        
+        <h3>Video <span>&#8594;</span> Music:</h3>
+        <li>1.Drop or upload videos to the section, check `use video` box.</li>
+		<li>2.Optional: enter any desire instruments, genres and tempo on the right. \
+            Also negative tags for things you don't want in the generated music. </li>
+		<li>3.Choose a desire LLM from the list. Default: Mistral-7B.</li>
+        <li>4.Click Generate button.</li>
+        <li>Optional: You may upload melody as condition(inpaint) in below section.\
+            You may also tune the Generation parameters and Sampler parameters.</li>
+
+        To use without video, simply uncheck the `use video` box and enter any desired instruments, \
+        genres, and tempo. Including any melody condition you want. 
+        
+        <Strong>Please note: Only uncheck `low_resource` mode if you have enough GPU memory (> 24GB) </strong>
 
         """
     )
