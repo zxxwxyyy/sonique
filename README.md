@@ -77,7 +77,7 @@ efficient-video-bgm-generation/
 ```
 
 # Video-to-music-generation
-Efficient-video-bgm is a multi-model tool leveraging on [stable_audio_tools](https://github.com/Stability-AI/stable-audio-tools), [Video_LLaMA](https://github.com/DAMO-NLP-SG/Video-LLaMA), and popular LLMs from Huggingface. 
+SONIQUE is a multi-model tool leveraging on [stable_audio_tools](https://github.com/Stability-AI/stable-audio-tools), [Video_LLaMA](https://github.com/DAMO-NLP-SG/Video-LLaMA), and popular LLMs from Huggingface. 
 
 ![t2i](demo_videos/assets/sonique.png)
 
