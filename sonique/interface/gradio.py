@@ -152,9 +152,7 @@ def generate_cond(
                         # "Qwen/Qwen1.5-14B-Chat",
                         quantization_config=BitsAndBytesConfig(
                                                                 load_in_4bit=True,
-                                                                bnb_4bit_quant_type="nf4",
-                                                                bnb_4bit_use_double_quant=True,
-                                                                bnb_4bit_compute_dtype=torch.float16
+                                                            bnb_4bit_compute_dtype=torch.float16
                                                                 )
                     )
             else:
@@ -193,8 +191,6 @@ def generate_cond(
                         "Qwen/Qwen1.5-14B-Chat",
                         quantization_config=BitsAndBytesConfig(
                                                             load_in_4bit=True,
-                                                            bnb_4bit_quant_type="nf4",
-                                                            bnb_4bit_use_double_quant=True,
                                                             bnb_4bit_compute_dtype=torch.float16
                                                             )
                     )
@@ -232,8 +228,6 @@ def generate_cond(
                 llm = AutoModelForCausalLM.from_pretrained("mistralai/Mistral-7B-Instruct-v0.2", 
                                                         quantization_config=BitsAndBytesConfig(
                                                             load_in_4bit=True,
-                                                            bnb_4bit_quant_type="nf4",
-                                                            bnb_4bit_use_double_quant=True,
                                                             bnb_4bit_compute_dtype=torch.float16
                                                             )
                                                         )
@@ -279,8 +273,6 @@ def generate_cond(
                 llm = AutoModelForCausalLM.from_pretrained("google/gemma-7b-it", 
                                                            quantization_config=BitsAndBytesConfig(
                                                             load_in_4bit=True,
-                                                            bnb_4bit_quant_type="nf4",
-                                                            bnb_4bit_use_double_quant=True,
                                                             bnb_4bit_compute_dtype=torch.float16
                                                             )
                                                                 # device_map="auto", 
@@ -329,8 +321,6 @@ def generate_cond(
                         "meta-llama/Llama-2-7b-chat-hf",
                         quantization_config=BitsAndBytesConfig(
                                                             load_in_4bit=True,
-                                                            bnb_4bit_quant_type="nf4",
-                                                            bnb_4bit_use_double_quant=True,
                                                             bnb_4bit_compute_dtype=torch.float16
                                                             )
                     )
@@ -387,8 +377,6 @@ def generate_cond(
                         "meta-llama/Llama-2-13b-chat-hf",
                         quantization_config=BitsAndBytesConfig(
                                                             load_in_4bit=True,
-                                                            bnb_4bit_quant_type="nf4",
-                                                            bnb_4bit_use_double_quant=True,
                                                             bnb_4bit_compute_dtype=torch.float16
                                                             )
                     )
