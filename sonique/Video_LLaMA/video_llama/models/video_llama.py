@@ -9,7 +9,7 @@ from sonique.Video_LLaMA.video_llama.common.registry import registry
 from sonique.Video_LLaMA.video_llama.models.blip2 import Blip2Base, disabled_train
 from sonique.Video_LLaMA.video_llama.models.modeling_llama import LlamaForCausalLM
 # from video_llama.models.Qformer import BertEncoder
-from transformers import LlamaTokenizer,BertConfig, AutoModelForCausalLM
+from transformers import LlamaTokenizer,BertConfig, AutoModelForCausalLM, BitsAndBytesConfig
 # from transformers.models.bert.modeling_bert import BertEncoder
 import einops
 import copy
@@ -134,9 +134,15 @@ class VideoLLAMA(Blip2Base):
         if self.low_resource:
             self.llama_model = AutoModelForCausalLM.from_pretrained(
                 llama_model,
-                torch_dtype=torch.float16,
-                load_in_4bit=True,
-                device_map='auto'
+                quantization_config=BitsAndBytesConfig(
+                                    load_in_4bit=True,
+                                    bnb_4bit_quant_type="nf4",
+                                    bnb_4bit_use_double_quant=True,
+                                    bnb_4bit_compute_dtype=torch.float16
+                                    )
+                # torch_dtype=torch.float16,
+                # load_in_4bit=True,
+                # device_map='auto'
             )
         else:
             self.llama_model = LlamaForCausalLM.from_pretrained(

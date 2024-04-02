@@ -143,17 +143,19 @@ def generate_cond(
             video_clip = video_clip.subclip(0, 23)
         video_des = generate_prompt_from_video_description(cfg_path="sonique/Video_LLaMA/eval_configs/video_llama_eval_only_vl.yaml", model_type="llama_v2", gpu_id="0", input_file=input_video, low_resource=low_resource)
         print(video_des)
-
+        # Low resource code adapt from: https://huggingface.co/blog/4bit-transformers-bitsandbytes
         # Qwen
         if llms=="qwen-7b":
             if low_resource:
                 llm = AutoModelForCausalLM.from_pretrained(
                         "Qwen/Qwen1.5-7B-Chat",
                         # "Qwen/Qwen1.5-14B-Chat",
-                        device_map="auto",
-                        torch_dtype=torch.float16,
-                        low_cpu_mem_usage=True,
-                        load_in_4bit=True
+                        quantization_config=BitsAndBytesConfig(
+                                                                load_in_4bit=True,
+                                                                bnb_4bit_quant_type="nf4",
+                                                                bnb_4bit_use_double_quant=True,
+                                                                bnb_4bit_compute_dtype=torch.float16
+                                                                )
                     )
             else:
                 llm = AutoModelForCausalLM.from_pretrained(
@@ -189,10 +191,12 @@ def generate_cond(
             if low_resource:
                 llm = AutoModelForCausalLM.from_pretrained(
                         "Qwen/Qwen1.5-14B-Chat",
-                        device_map="auto",
-                        torch_dtype=torch.float16,
-                        low_cpu_mem_usage=True,
-                        load_in_4bit=True
+                        quantization_config=BitsAndBytesConfig(
+                                                            load_in_4bit=True,
+                                                            bnb_4bit_quant_type="nf4",
+                                                            bnb_4bit_use_double_quant=True,
+                                                            bnb_4bit_compute_dtype=torch.float16
+                                                            )
                     )
             else:
                 llm = AutoModelForCausalLM.from_pretrained(
@@ -226,10 +230,12 @@ def generate_cond(
             # Mistral - 7B
             if low_resource:
                 llm = AutoModelForCausalLM.from_pretrained("mistralai/Mistral-7B-Instruct-v0.2", 
-                                                        device_map="auto", 
-                                                        torch_dtype=torch.float16,
-                                                        low_cpu_mem_usage=True,
-                                                        load_in_4bit=True
+                                                        quantization_config=BitsAndBytesConfig(
+                                                            load_in_4bit=True,
+                                                            bnb_4bit_quant_type="nf4",
+                                                            bnb_4bit_use_double_quant=True,
+                                                            bnb_4bit_compute_dtype=torch.float16
+                                                            )
                                                         )
             else:
                 llm = AutoModelForCausalLM.from_pretrained("mistralai/Mistral-7B-Instruct-v0.2", 
@@ -271,10 +277,16 @@ def generate_cond(
             # Gemma - 7B
             if low_resource:
                 llm = AutoModelForCausalLM.from_pretrained("google/gemma-7b-it", 
-                                                                device_map="auto", 
-                                                                torch_dtype=torch.float16,
-                                                                low_cpu_mem_usage=True,
-                                                                load_in_4bit=True
+                                                           quantization_config=BitsAndBytesConfig(
+                                                            load_in_4bit=True,
+                                                            bnb_4bit_quant_type="nf4",
+                                                            bnb_4bit_use_double_quant=True,
+                                                            bnb_4bit_compute_dtype=torch.float16
+                                                            )
+                                                                # device_map="auto", 
+                                                                # torch_dtype=torch.float16,
+                                                                # low_cpu_mem_usage=True,
+                                                                # load_in_4bit=True
                                                                 )
             else:
                 llm = AutoModelForCausalLM.from_pretrained("google/gemma-7b-it", 
@@ -315,10 +327,12 @@ def generate_cond(
             if low_resource:
                 llm = AutoModelForCausalLM.from_pretrained(
                         "meta-llama/Llama-2-7b-chat-hf",
-                        device_map="auto",
-                        torch_dtype=torch.float16,
-                        low_cpu_mem_usage=True,
-                        load_in_4bit=True
+                        quantization_config=BitsAndBytesConfig(
+                                                            load_in_4bit=True,
+                                                            bnb_4bit_quant_type="nf4",
+                                                            bnb_4bit_use_double_quant=True,
+                                                            bnb_4bit_compute_dtype=torch.float16
+                                                            )
                     )
             else:
                 llm = AutoModelForCausalLM.from_pretrained(
@@ -371,10 +385,12 @@ def generate_cond(
             if low_resource:
                 llm = AutoModelForCausalLM.from_pretrained(
                         "meta-llama/Llama-2-13b-chat-hf",
-                        device_map="auto",
-                        torch_dtype=torch.float16,
-                        low_cpu_mem_usage=True,
-                        load_in_4bit=True
+                        quantization_config=BitsAndBytesConfig(
+                                                            load_in_4bit=True,
+                                                            bnb_4bit_quant_type="nf4",
+                                                            bnb_4bit_use_double_quant=True,
+                                                            bnb_4bit_compute_dtype=torch.float16
+                                                            )
                     )
             else:
                 llm = AutoModelForCausalLM.from_pretrained(
