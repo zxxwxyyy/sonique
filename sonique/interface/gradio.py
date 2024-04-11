@@ -73,7 +73,6 @@ def load_model(model_config=None, model_ckpt_path=None, pretrained_name=None, pr
     return model, model_config
 
 def generate_cond(
-        # prompt,
         instruments,
         genres,
         tempo,
@@ -103,6 +102,7 @@ def generate_cond(
         mask_softnessL=None,
         mask_softnessR=None,
         mask_marination=None,
+        prompt=None,
         batch_size=1   
     ):
     import time
@@ -113,9 +113,11 @@ def generate_cond(
     if preview_every == 0:
         preview_every = None
     print(f'use video? {use_video}, use melody? {use_init}')
-    prompt = f"{instruments}, {genres}, {tempo}"
-
+    
     if prompt is not None:
+        prompt = prompt.lower()
+    else:
+        prompt = f"{instruments}, {genres}, {tempo}"
         prompt = prompt.lower()
 
     print(prompt)
@@ -453,6 +455,9 @@ def generate_cond(
         bpm_to_include = bpm_to_include
         updated_prompt = ', '.join(sorted(updated_elements)) + (', ' + bpm_to_include if bpm_to_include else '')
         conditioning[0]['prompt'] = updated_prompt.lower()
+        conditioning[0]['seconds_start'] = 0
+        conditioning[0]['seconds_total'] = int(video_duration)
+
     print(f'updated conditioning prompt: {conditioning}')
 
     if not use_init:
@@ -555,7 +560,7 @@ def generate_cond(
 
 
 def clear_all():
-    return "", "", "", "", 0, 23, 7.0, 300, 0, -1, "dpmpp-2m-sde", 0.03, 80, 0.2, False, None, 3, False, None, "mistral-7b"
+    return "", "", "", "", 0, 23, 3.0, 300, 0, -1, "dpmpp-2m-sde", 0.03, 80, 0.2, False, None, 3, False, None, "mistral-7b"
 
 case_note_upload = ("""
 ### Some examples provided at the bottom of the page. Click on them to try them out!
@@ -590,7 +595,7 @@ def create_sampling_ui(model_config, inpainting=False):
                                 # "qwen-7b", 
                                 "qwen-14b", 
                                 "llama-13b"], 
-                                label="LLMs", info="Select llm to extract video description to tags. Default Mistral-7B")
+                                label="Required: LLMs", info="Select llm to extract video description to tags. Default Mistral-7B")
             low_resource = gr.Checkbox(label="Optional: To run the model in low_resource mode", value=True)
             generate_button = gr.Button("Generate", variant='primary', scale=1)
             clear_all_button = gr.Button("Clear all")
@@ -611,7 +616,7 @@ def create_sampling_ui(model_config, inpainting=False):
                     preview_every_slider = gr.Slider(minimum=0, maximum=100, step=1, value=0, label="Preview Every")
 
                     # CFG scale 
-                    cfg_scale_slider = gr.Slider(minimum=0.0, maximum=25.0, step=0.1, value=7.0, label="CFG scale")
+                    cfg_scale_slider = gr.Slider(minimum=0.0, maximum=25.0, step=0.1, value=3.0, label="CFG scale")
 
                     seconds_start_slider = gr.Slider(minimum=0, maximum=512, step=1, value=0, label="Seconds start", visible=has_seconds_start)
                     seconds_total_slider = gr.Slider(minimum=0, maximum=512, step=1, value=sample_size//sample_rate, label="Seconds total", visible=has_seconds_total)
@@ -699,11 +704,11 @@ def create_sampling_ui(model_config, inpainting=False):
         llms
     ]
     video_examples = gr.Examples(examples=[
-        [True, "./demo_videos/Better_Call_Saul2.mp4", False, None, "mistral-7b"],
-        [True, "./demo_videos/Better_Call_Saul4.mp4", False, None, "mistral-7b"],
-        [True, "./demo_videos/breakingbad_4.mp4", False, None, "mistral-7b"],
+        [True, "./demo_videos/Infinite_car_chase.mp4", False, None, "mistral-7b"],
+        [True, "./demo_videos/Lei_and_Josh.mp4", False, None, "mistral-7b"],
+        [True, "./demo_videos/breakingbad.mp4", False, None, "mistral-7b"],
         [True, "./demo_videos/breakingbad_6.mp4", False, None, "mistral-7b"],
-        [True, "./demo_videos/friends_2.mp4", False, None, "mistral-7b"],
+        [True, "./demo_videos/friends.mp4", False, None, "mistral-7b"],
         ], 
                            inputs=video_only_inputs,
                            outputs=[audio_output, 
@@ -713,26 +718,26 @@ def create_sampling_ui(model_config, inpainting=False):
                                     fn=generate_cond,
                                     cache_examples=False,
                                     label="Example Video Input")
-    video_with_melody = [
-        init_audio_checkbox,
-        init_audio_input,
-        init_noise_level_slider,
-        use_video,
-        video_input,
-        llms
-    ]
-    video_melody_examples = gr.Examples(examples=[
-        [True,"./demo_videos/000590.wav", 3, True, "./demo_videos/Better_Call_Saul2.mp4", "mistral-7b"],
-        [True,"./demo_videos/1908-1.wav", 3, True, "./demo_videos/breakingbad_6.mp4", "mistral-7b"],
-        ], 
-                           inputs=video_with_melody,
-                           outputs=[audio_output, 
-                                    video_output,
-                                    audio_spectrogram_output,
-                                    current_prompt], 
-                                    fn=generate_cond,
-                                    cache_examples=False,
-                                    label="Example Video+Melody Input")
+    # video_with_melody = [
+    #     init_audio_checkbox,
+    #     init_audio_input,
+    #     init_noise_level_slider,
+    #     use_video,
+    #     video_input,
+    #     llms
+    # ]
+    # video_melody_examples = gr.Examples(examples=[
+    #     [True,"./demo_videos/000590.wav", 3, True, "./demo_videos/Better_Call_Saul2.mp4", "mistral-7b"],
+    #     [True,"./demo_videos/1908-1.wav", 3, True, "./demo_videos/breakingbad_6.mp4", "mistral-7b"],
+    #     ], 
+    #                        inputs=video_with_melody,
+    #                        outputs=[audio_output, 
+    #                                 video_output,
+    #                                 audio_spectrogram_output,
+    #                                 current_prompt], 
+    #                                 fn=generate_cond,
+    #                                 cache_examples=False,
+    #                                 label="Example Video+Melody Input")
     
     prompt_input = [
         instruments,
@@ -757,40 +762,40 @@ def create_sampling_ui(model_config, inpainting=False):
                                     cache_examples=False,
                                     label="Example Prompt Input")
     
-    prompt_melody_input = [
-        instruments,
-        genres,
-        tempo,
-        init_audio_checkbox,
-        init_audio_input,
-        init_noise_level_slider,
-        use_video,
-        video_input
-    ]
-    prompt_melody_examples = gr.Examples(examples=[
-        ["Guitar, Piano, Bass", "Jazz", "130 bpm", True, "./demo_videos/drums.wav", 5, False, None],
-        ["Piano", "Ambient, Slow", "70 bpm", True, "./demo_videos/1908-4.wav", 3, False, None],
-        ], 
-                           inputs=prompt_melody_input,
-                           outputs=[audio_output, 
-                                    video_output,
-                                    audio_spectrogram_output,
-                                    current_prompt], 
-                                    fn=generate_cond,
-                                    cache_examples=False,
-                                    label="Example Prompt+Melody Input")
+    # prompt_melody_input = [
+    #     instruments,
+    #     genres,
+    #     tempo,
+    #     init_audio_checkbox,
+    #     init_audio_input,
+    #     init_noise_level_slider,
+    #     use_video,
+    #     video_input
+    # ]
+    # prompt_melody_examples = gr.Examples(examples=[
+    #     ["Guitar, Piano, Bass", "Jazz", "130 bpm", True, "./demo_videos/drums.wav", 5, False, None],
+    #     ["Piano", "Ambient, Slow", "70 bpm", True, "./demo_videos/1908-4.wav", 3, False, None],
+    #     ], 
+    #                        inputs=prompt_melody_input,
+    #                        outputs=[audio_output, 
+    #                                 video_output,
+    #                                 audio_spectrogram_output,
+    #                                 current_prompt], 
+    #                                 fn=generate_cond,
+    #                                 cache_examples=False,
+    #                                 label="Example Prompt+Melody Input")
     with gr.Blocks():
 
         with gr.Row():
             video_examples
 
-        with gr.Row():
-            video_melody_examples
+        # with gr.Row():
+        #     video_melody_examples
 
         with gr.Row():
             prompt_examples
-        with gr.Row():
-            prompt_melody_examples
+        # with gr.Row():
+        #     prompt_melody_examples
             
             
 

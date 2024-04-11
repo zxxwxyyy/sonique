@@ -17,7 +17,7 @@ A Multi-model tool that designed to help video editors generate background music
 - [Text-to-music-generation](#text-to-music-generation)
 
 # Demo
-Coming soon
+<video src="./demo_videos/assets/best_demo_v4.mp4" width="360" />
 
 # Install 
 1. Clone this repo 

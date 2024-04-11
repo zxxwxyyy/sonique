@@ -7,7 +7,6 @@ adp_cond5.json
 adp_uncond3.json
 create_metadata.py
 *.wav
-*.mp4
 stable_audio_vae.json
 stable_audio_vae1.json
 stable_cond.json
@@ -17,7 +16,7 @@ docs
 __pycache__
 efficient_video_bgm/configs
 wandb
-./sonique/Video_LLaMA/demo_videos
+./sonique/Video_LLaMA/demo_videos/
 sonique.egg-info
 clean_metadata_brid_tags.py
 clean_metadata_cuidado_tags.py
