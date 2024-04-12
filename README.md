@@ -5,18 +5,25 @@ sdk: gradio
 sdk_version: 3.42.0
 --- -->
 
-# SONIQUE: Efficient Video Background Music Generation (In progress)
+# SONIQUE: Efficient Video Background Music Generation
 
-A Multi-model tool that designed to help video editors generate background music on video & tv series' transition scene. In addition, it can be used by music composers to generate conditioned music base on instruments, genres, tempo rate, and even specific melodies. 
+<div style='display:flex; gap: 0.5rem; '>
+<a href='https://zxxwxyyy.github.io/templates/sonique.html'><img src='https://img.shields.io/badge/Demo-Website-blueviolet'></a>
+<a href=''><img src='https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Demo(Coming Soon)-blue'></a>
+<a href=''><img src='https://img.shields.io/badge/Thesis-Paper-pink'></a>
+<a href='https://drive.google.com/file/d/1kRy-B82ZGvRrJq4M5ob45jOvQgp9r_Xz/view?usp=sharing'><img src='https://img.shields.io/badge/Dowload-Checkpoint-green'></a>
+</div>
+
+A Multi-model tool that designed to help video editors generate background music on video & tv series' transition scene. In addition, it can be used by music composers to generate conditioned music base on instruments, genres, tempo rate, and even specific melodies. Check out the [demo](https://zxxwxyyy.github.io/templates/sonique.html) page for generated examples. 
+
+**Performance:** Executing the entire process on an NVIDIA 4090 graphics card is accomplished in under a minute. This model requires less than 14 GB GPU memory. When operated on an NVIDIA 3070 Laptop GPU with 8 GB of memory, the process duration extends to 360 seconds.
 
 # Table of contents
-- [Demo](#demo)
+<!-- - [Demo](https://github.com/zxxwxyyy/sonique?tab=readme-ov-file#demo) -->
 - [Install](#install)
 - [Model Checkpoint](#model-checkpoint)
 - [Video-to-music-generation](#video-to-music-generation)
 - [Text-to-music-generation](#text-to-music-generation)
-
-# Demo
 
 # Install 
 1. Clone this repo 
@@ -30,11 +37,11 @@ pip install .
 ```
 4. After installation, you may run the demo with UI interface:
 ```bash
-python run_gradio.py --model-config best_model.json --ckpt-path ./ckpts/stable_ep=121.ckpt
+python run_gradio.py --model-config best_model.json --ckpt-path ./ckpts/stable_ep=220.ckpt
 ```
 5. To run the demo without interface:
 ```bash
-python inference.py --model-config best_model.json --ckpt-path ./ckpts/stable_ep=121.ckpt
+python inference.py --model-config best_model.json --ckpt-path ./ckpts/stable_ep=220.ckpt
 ```
 ### Additional inference flags:
 - `--use-video`:
@@ -66,11 +73,12 @@ python inference.py --model-config best_model.json --ckpt-path ./ckpts/stable_ep
     - *Default*: None
   
 ### Model Checkpoint
-Pretrained model can be download [here](). Please download, unzip, and save in the root of this project. 
+Pretrained model can be download [here](https://drive.google.com/file/d/1kRy-B82ZGvRrJq4M5ob45jOvQgp9r_Xz/view?usp=sharing). Please download, unzip, and save in the root of this project. 
 ```bash
-efficient-video-bgm-generation/
+sonique/
 ├── ckpts/
 │   ├── .../
+├── sonique/
 ├── run_gradio.py/
 ...
 ```
@@ -87,11 +95,5 @@ Video description is extracted from the input video. I use [Video_LLaMA](https:/
 - Gemma 7B (You will need to get authenticate from [Google](https://huggingface.co/google/gemma-7b-it))
 
 # Text-to-music-generation
-Instead of using video, you may also mannually enter instruments, genres and tempo rate to generate music. 
-
-# In-progress: 
-- Finetuning the model 
-- Working on the gradio demo 
-- Adding support for sound effect 
-- Improve the generation effiiency. 
+Instead of using video, you may also mannually enter instruments, genres and tempo rate to generate music. You may upload melody as condition(inpaint) in `use melody condition` section. You may also tune the generation parameters and sampler parameters.
 
