@@ -252,7 +252,7 @@ def generate_cond(
             decoded = tokenizer.batch_decode(generated_ids)
             print(decoded[0])
             responses = decoded[0]
-            matched = re.findall(r"\{'tags': \[.*?\]\}", responses)
+            matched = re.findall(r"\{'tags': \[.*?\]\}|\{\"tags\": \[.*?\]\}", responses)
             if matched:
                 json_str = matched[-1]
 
@@ -300,7 +300,7 @@ def generate_cond(
             responses = responses.split("Inputs:")[-1]
             print(responses)
             # Extract only tags from gemma response
-            matched = re.findall(r"\{'tags': \[.*?\]\}", responses)
+            matched = re.findall(r"\{'tags': \[.*?\]\}|\{\"tags\": \[.*?\]\}", responses)
             if matched:
                 json_str = matched[-1]
 
@@ -317,10 +317,10 @@ def generate_cond(
             else:
                 print("Failed to extract JSON string from response.")
 
-        elif llms == "llama-7b":
+        elif llms == "llama3-8b":
             if low_resource:
                 llm = AutoModelForCausalLM.from_pretrained(
-                        "meta-llama/Llama-2-7b-chat-hf",
+                        "meta-llama/Meta-Llama-3-8B-Instruct",
                         quantization_config=BitsAndBytesConfig(
                                                             load_in_4bit=True,
                                                             bnb_4bit_compute_dtype=torch.float16
@@ -328,11 +328,11 @@ def generate_cond(
                     )
             else:
                 llm = AutoModelForCausalLM.from_pretrained(
-                        "meta-llama/Llama-2-7b-chat-hf",
+                        "meta-llama/Meta-Llama-3-8B-Instruct",
                         device_map="cuda",
                         torch_dtype=torch.float16
                     )
-            tokenizer = AutoTokenizer.from_pretrained("meta-llama/Llama-2-7b-chat-hf")
+            tokenizer = AutoTokenizer.from_pretrained("meta-llama/Meta-Llama-3-8B-Instruct")
             messages = [
                                 {"role": "system", "content": "As a music composer fluent in English, you're tasked with creating background music for video. \
                                 Based on the scene described, provide only one set of tags in English that describe this background music for the video. \
@@ -356,7 +356,7 @@ def generate_cond(
                             ]
             responses = tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
             print(f'responses:{responses}')
-            matched = re.findall(r"\{'tags': \[.*?\]\}", responses)
+            matched = re.findall(r"\{'tags': \[.*?\]\}|\{\"tags\": \[.*?\]\}", responses)
             if matched:
                 json_str = matched[-1]
 
@@ -373,7 +373,7 @@ def generate_cond(
             else:
                 print("Failed to extract JSON string from response.")
 
-        elif llms == "llama-13b":
+        elif llms == "llama2-13b":
             if low_resource:
                 llm = AutoModelForCausalLM.from_pretrained(
                         "meta-llama/Llama-2-13b-chat-hf",
@@ -412,7 +412,7 @@ def generate_cond(
                             ]
             responses = tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
             print(responses)
-            matched = re.findall(r"\{'tags': \[.*?\]\}", responses)
+            matched = re.findall(r"\{'tags': \[.*?\]\}|\{\"tags\": \[.*?\]\}", responses)
             if matched:
                 json_str = matched[-1]
 
@@ -591,10 +591,10 @@ def create_sampling_ui(model_config, inpainting=False):
             negative_prompt = gr.Textbox(label="Optional: enter negative tags", placeholder="Negative tags - things you don't want in the output.")
             llms = gr.Dropdown(["mistral-7b", 
                                 "gemma-7b", 
-                                # "llama-7b", 
+                                "llama3-8b", 
                                 # "qwen-7b", 
                                 "qwen-14b", 
-                                "llama-13b"], 
+                                "llama2-13b"], 
                                 label="Required: LLMs", info="Select llm to extract video description to tags. Default Mistral-7B")
             low_resource = gr.Checkbox(label="Optional: To run the model in low_resource mode", value=True)
             generate_button = gr.Button("Generate", variant='primary', scale=1)

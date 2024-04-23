@@ -1,20 +1,15 @@
-<!-- ---
-title: efficient-video-bgm
-app_file: run_gradio.py
-sdk: gradio
-sdk_version: 3.42.0
---- -->
+
 
 # SONIQUE: Efficient Video Background Music Generation
 
 <div style='display:flex; gap: 0.5rem; '>
 <a href='https://zxxwxyyy.github.io/templates/sonique.html'><img src='https://img.shields.io/badge/Demo-Website-blueviolet'></a>
-<a href=''><img src='https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Demo(Coming Soon)-blue'></a>
+<!-- <a href=''><img src='https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Demo(Coming Soon)-blue'></a> -->
 <a href=''><img src='https://img.shields.io/badge/Thesis-Paper-pink'></a>
 <a href='https://drive.google.com/file/d/1kRy-B82ZGvRrJq4M5ob45jOvQgp9r_Xz/view?usp=sharing'><img src='https://img.shields.io/badge/Dowload-Checkpoint-green'></a>
 </div>
 
-A Multi-model tool that designed to help video editors generate background music on video & tv series' transition scene. In addition, it can be used by music composers to generate conditioned music base on instruments, genres, tempo rate, and even specific melodies. Check out the [demo](https://zxxwxyyy.github.io/templates/sonique.html) page for generated examples. 
+A Multi-model tool that designed to help video editors generate background music on video & tv series' transition scene. In addition, it can be used by music composers to generate conditioned music base on instruments, genres, tempo rate, and even specific melodies. Check out the [demo](https://zxxwxyyy.github.io/templates/sonique.html) page for more details. 
 
 **Performance:** Executing the entire process on an NVIDIA 4090 graphics card is accomplished in under a minute. This model requires less than 14 GB GPU memory. When operated on an NVIDIA 3070 Laptop GPU with 8 GB of memory, the process duration extends to 360 seconds.
 
@@ -91,7 +86,8 @@ SONIQUE is a multi-model tool leveraging on [stable_audio_tools](https://github.
 Video description is extracted from the input video. I use [Video_LLaMA](https://github.com/DAMO-NLP-SG/Video-LLaMA) to extract video description from the video. Then it will be pass to LLMs to converted them into tags that describe the background music. For the LLMs currently support: 
 - Mistrial 7B (default)
 - Qwen 14B
-- LLaMA2 13B (You will need to get authenticate from [Meta](https://huggingface.co/meta-llama/Llama-2-7b-chat-hf))
+- LLaMA3 8B(You will need to get authenticate from [Meta](https://huggingface.co/meta-llama/Meta-Llama-3-8B-Instruct))
+- LLaMA2 13B (You will need to get authenticate from [Meta](https://huggingface.co/meta-llama/Llama-2-13b-chat-hf))
 - Gemma 7B (You will need to get authenticate from [Google](https://huggingface.co/google/gemma-7b-it))
 
 # Text-to-music-generation
