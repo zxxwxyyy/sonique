@@ -99,7 +99,7 @@ Please consider citing the project if it helps your research:
 ```
 @misc{zhang2024sonique,
   title={SONIQUE: Efficient Video Background Music Generation},
-  author={Liqian, Zhang},
+  author={Zhang, Liqian},
   year={2024},
   publisher={GitHub},
   journal={GitHub repository},
