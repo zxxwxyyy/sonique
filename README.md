@@ -19,6 +19,7 @@ A Multi-model tool that designed to help video editors generate background music
 - [Model Checkpoint](#model-checkpoint)
 - [Video-to-music-generation](#video-to-music-generation)
 - [Text-to-music-generation](#text-to-music-generation)
+- [Citation](#citation)
 
 # Install 
 1. Clone this repo 
@@ -93,3 +94,15 @@ Video description is extracted from the input video. I use [Video_LLaMA](https:/
 # Text-to-music-generation
 Instead of using video, you may also mannually enter instruments, genres and tempo rate to generate music. You may upload melody as condition(inpaint) in `use melody condition` section. You may also tune the generation parameters and sampler parameters.
 
+# Citation
+Please consider citing the project if it helps your research:
+```
+@misc{zhang2024sonique,
+  title={SONIQUE: Efficient Video Background Music Generation},
+  author={Liqian, Zhang},
+  year={2024},
+  publisher={GitHub},
+  journal={GitHub repository},
+  howpublished={https://github.com/zxxwxyyy/sonique},
+}
+```
