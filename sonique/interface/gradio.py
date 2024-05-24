@@ -706,9 +706,10 @@ def create_sampling_ui(model_config, inpainting=False):
     video_examples = gr.Examples(examples=[
         [True, "./demo_videos/Infinite_car_chase.mp4", False, None, "mistral-7b"],
         [True, "./demo_videos/Lei_and_Josh.mp4", False, None, "mistral-7b"],
-        [True, "./demo_videos/breakingbad.mp4", False, None, "mistral-7b"],
         [True, "./demo_videos/breakingbad_6.mp4", False, None, "mistral-7b"],
+        [True, "./demo_videos/zootopia.mp4", False, None, "mistral-7b"],
         [True, "./demo_videos/friends.mp4", False, None, "mistral-7b"],
+        [True, "./demo_videos/balenciaga_22.mp4", False, None, "mistral-7b"],
         ], 
                            inputs=video_only_inputs,
                            outputs=[audio_output, 

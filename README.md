@@ -17,6 +17,7 @@ A Multi-model tool that designed to help video editors generate background music
 <!-- - [Demo](https://github.com/zxxwxyyy/sonique?tab=readme-ov-file#demo) -->
 - [Install](#install)
 - [Model Checkpoint](#model-checkpoint)
+- [Data Collection & Preprocessing](#data-collection--preprocessing)
 - [Video-to-music-generation](#video-to-music-generation)
 - [Text-to-music-generation](#text-to-music-generation)
 - [Citation](#citation)
@@ -78,6 +79,10 @@ sonique/
 ├── run_gradio.py/
 ...
 ```
+
+# Data Collection & Preprocessing
+
+See [here](./data_preprocessing/README.md) for details.
 
 # Video-to-music-generation
 SONIQUE is a multi-model tool leveraging on [stable_audio_tools](https://github.com/Stability-AI/stable-audio-tools), [Video_LLaMA](https://github.com/DAMO-NLP-SG/Video-LLaMA), and popular LLMs from Huggingface. 
