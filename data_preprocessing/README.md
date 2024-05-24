@@ -4,13 +4,13 @@
 
 ![t2i](../demo_videos/assets/dataset.png)
 
-The dataset used to train SONIQUE contains musical data collected without metadatas. To properly preprocess and create metadata for training, see the following steps:
+To properly preprocess and create metadata for training, see the following steps:
 
 ## [Remove silence part from instrument stems](remove_silence.py)
-This script removes the silent parts from isolated instrument stems to help the model learn more effectively.
+The dataset used to train SONIQUE contains musical data collected without metadatas. This script removes the silent parts from isolated instrument stems to help the model learn more effectively.
 
 ## [Scrape royalty-free background music](scrape_royalty_free_bgm.py)
-The data used to train the conditioned music generation model was royalty-free music scraped from online. This ensures that the result is more tailored to video background music. The script uses the Python library `selenium` to automatically download royalty-free background music from Pixabay.
+Part of the data used to train the conditioned music generation model was royalty-free music scraped from online. This ensures that the result is more tailored to video background music. The script uses the Python library `selenium` to automatically download royalty-free background music from Pixabay.
 
 ## [Metadata creation for the training data](generate_audio_metadata.py) 
 This script leverages the pretrained model [`lp-music-caps`](https://github.com/seungheondoh/lp-music-caps) to generate metadata for the scraped music above. 
