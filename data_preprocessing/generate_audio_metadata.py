@@ -53,7 +53,10 @@ def load_existing_metadata(dataset_root):
 def find_missing_metadata_files(audio_files, existing_metadata):
     missing_files = []
     for file in audio_files:
-        if file not in existing_metadata:
+        track_folder_name = os.path.basename(os.path.dirname(file))
+        file_name = os.path.basename(file)
+        track_identifier = f"{track_folder_name}/{file_name}"
+        if track_identifier not in existing_metadata:
             missing_files.append(file)
     return missing_files
 
