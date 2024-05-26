@@ -42,9 +42,17 @@ def process_and_save_metadata(file_path, output_path, model, tokenizer, device):
     
     new_metadata = {}
     for track, data in metadata.items():
-        all_tags = [tag for chunk in data['chunks'] for tag in chunk['tags'].split(", ")]
-        instruction, combined_tags = prepare_llm_input(all_tags)
-        summarized_tags = generate_summarized_tags(instruction, combined_tags, model, tokenizer, device)
+        all_tags = set()
+        for chunk in data.get('chunks', []):
+            chunk_tags = chunk.get('tags', [])
+            all_tags.update(chunk_tags)
+        
+        if all_tags:
+            instruction, combined_tags = prepare_llm_input(all_tags)
+            summarized_tags = generate_summarized_tags(instruction, combined_tags, model, tokenizer, device)
+        else:
+            summarized_tags = ""
+       
         bpm = f'{data["bpm"]} BPM'
         new_metadata[track] = {
             "tags": summarized_tags + " ," + bpm
