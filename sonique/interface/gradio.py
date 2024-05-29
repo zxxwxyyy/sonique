@@ -244,6 +244,7 @@ def generate_cond(
                     music for the video. These tags must include instruments, music genres, and tempo rate(e.g. 90 BPM). \
                     Avoid any non-English words. Please return the tags in the following JSON structure: {{\'tags\': [\'tag1\', \'tag2\', \'tag3\']}} \
                     Input: {video_des}"}]
+
             encodeds = tokenizer.apply_chat_template(messages, return_tensors="pt")
             llm_inputs = encodeds.to(llm.device)
             # llm.to(device)
@@ -268,6 +269,37 @@ def generate_cond(
                     print("Failed to parse JSON:", e)
             else:
                 print("Failed to extract JSON string from response.")
+        elif llms == "mistral-7b-ft":
+            # Fine-tuned version of Mistral-7B
+            from peft import AutoPeftModelForCausalLM
+            from transformers import pipeline
+            peft_model_id = "./ckpts/mistral-7b-audio-tags"
+            llm = AutoPeftModelForCausalLM.from_pretrained(
+                peft_model_id,
+                quantization_config=BitsAndBytesConfig(
+                                                            load_in_4bit=True,
+                                                            bnb_4bit_compute_dtype=torch.float16
+                                                            )
+            )
+            tokenizer = AutoTokenizer.from_pretrained(peft_model_id)
+            pipe = pipeline("text-generation", model=llm, tokenizer=tokenizer)
+            messages = [{"role": "system", "content": "As a music composer \
+                                      fluent in English, you're tasked with creating \
+                                      background music for video. \
+                                      Based on the scene described, \
+                                      provide only one set of tags in English that \
+                                      describe this background \
+                                      music for the video. \
+                                      These tags must include instruments, \
+                                      music genres, and tempo rate(e.g. 90 BPM).       \
+                                      Avoid any non-English words. Please return the tags in the \
+                                      following JSON structure: {{'tags': ['tag1', 'tag2', 'tag3']}}"},
+                                    {"role": "user", "content": video_des}
+                                    ]
+            prompt = pipe.tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+            outputs = pipe(prompt, max_new_tokens=256, do_sample=False, temperature=0.1, top_k=50, top_p=0.1, eos_token_id=pipe.tokenizer.eos_token_id, pad_token_id=pipe.tokenizer.pad_token_id)
+            response = outputs[0]['generated_text'][len(prompt):].strip()
+            print(f'ft llm response {response}')
 
         elif llms == "gemma-7b":    
             # Gemma - 7B
@@ -591,10 +623,10 @@ def create_sampling_ui(model_config, inpainting=False):
             negative_prompt = gr.Textbox(label="Optional: enter negative tags", placeholder="Negative tags - things you don't want in the output.")
             llms = gr.Dropdown(["mistral-7b", 
                                 "gemma-7b", 
-                                "llama3-8b", 
-                                # "qwen-7b", 
+                                "llama3-8b",  
                                 "qwen-14b", 
-                                "llama2-13b"], 
+                                "llama2-13b",
+                                "mistral-7b-ft"], 
                                 label="Required: LLMs", info="Select llm to extract video description to tags. Default Mistral-7B")
             low_resource = gr.Checkbox(label="Optional: To run the model in low_resource mode", value=True)
             generate_button = gr.Button("Generate", variant='primary', scale=1)
