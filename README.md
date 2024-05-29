@@ -17,13 +17,13 @@ A Multi-model tool that designed to help video editors generate background music
 
 # Table of contents
 <!-- - [Demo](https://github.com/zxxwxyyy/sonique?tab=readme-ov-file#demo) -->
-- [`Install`](#install)
-- [`Model Checkpoint`](#model-checkpoint)
-- [`Data Collection & Preprocessing`](#data-collection--preprocessing)
-- [`Video-to-music-generation`](#video-to-music-generation)
-- [`Text-to-music-generation`](#text-to-music-generation)
-- [`Fine-tune LLM experiment`](#fine-tune-llm)
-- [`Citation`](#citation)
+- [Install](#install)
+- [Model Checkpoint](#model-checkpoint)
+- [Data Collection & Preprocessing](#data-collection--preprocessing)
+- [Video-to-music-generation](#video-to-music-generation)
+- [Text-to-music-generation](#text-to-music-generation)
+- [Fine-tune LLM experiment](#fine-tune-llm)
+- [Citation](#citation)
 
 # Install 
 1. Clone this repo 
