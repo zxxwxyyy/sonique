@@ -1,6 +1,6 @@
 
 
-# SONIQUE: Efficient Video Background Music Generation
+# SONIQUE: Video Background Music Generation Using Unpaired Audio-Visual Data
 
 <div style='display:flex; gap: 0.5rem; '>
 <a href='https://zxxwxyyy.github.io/templates/sonique.html'><img src='https://img.shields.io/badge/Demo-Website-blueviolet'></a>
@@ -9,7 +9,18 @@
 <a href='https://drive.google.com/file/d/1kRy-B82ZGvRrJq4M5ob45jOvQgp9r_Xz/view?usp=sharing'><img src='https://img.shields.io/badge/Dowload-Checkpoint-green'></a>
 </div>
 
-A Multi-model tool that designed to help video editors generate background music on video & tv series' transition scene. In addition, it can be used by music composers to generate conditioned music base on instruments, genres, tempo rate, and even specific melodies. Check out the [demo](https://zxxwxyyy.github.io/templates/sonique.html) page for more details. 
+We present SONIQUE, a model for generating
+background music tailored to video content. Unlike traditional
+video-to-music generation approaches, which rely heavily on
+paired audio-visual datasets, SONIQUE leverages unpaired data,
+combining royalty-free music and independent video sources. By
+utilizing large language models (LLMs) for video understanding
+and converting visual descriptions into musical tags, alongside
+a U-Net-based conditional diffusion model, SONIQUE enables
+customizable music generation. Users can control specific aspects
+of the music, such as instruments, genres, tempo, and melodies,
+ensuring the generated output fits their creative vision. SONIQUE
+is open-source, with a [demo](https://zxxwxyyy.github.io/templates/sonique.html) available online.
 
 ![t2i](demo_videos/assets/sonique.png)
 
@@ -93,8 +104,6 @@ SONIQUE is a multi-model tool leveraging on [stable_audio_tools](https://github.
 Video description is extracted from the input video. I use [Video_LLaMA](https://github.com/DAMO-NLP-SG/Video-LLaMA) to extract video description from the video. Then it will be pass to LLMs to converted them into tags that describe the background music. For the LLMs currently support: 
 - Mistrial 7B (default)
 - Qwen 14B
-- LLaMA3 8B(You will need to get authenticate from [Meta](https://huggingface.co/meta-llama/Meta-Llama-3-8B-Instruct))
-- LLaMA2 13B (You will need to get authenticate from [Meta](https://huggingface.co/meta-llama/Llama-2-13b-chat-hf))
 - Gemma 7B (You will need to get authenticate from [Google](https://huggingface.co/google/gemma-7b-it))
 
 # Text-to-music-generation

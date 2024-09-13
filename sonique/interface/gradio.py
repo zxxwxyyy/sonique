@@ -134,60 +134,19 @@ def generate_cond(
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     seed = int(seed) if int(seed) != -1 else np.random.randint(0, 2**31 - 1)
+    print(f'Seed: {seed}')
     if not use_video:
         input_video = None
         video_duration = 0
-    # print(input_video)
     if input_video is not None:
         video_clip = VideoFileClip(input_video)
         video_duration = video_clip.duration
         if video_duration > 23:
             video_clip = video_clip.subclip(0, 23)
-        video_des = generate_prompt_from_video_description(cfg_path="sonique/Video_LLaMA/eval_configs/video_llama_eval_only_vl.yaml", model_type="llama_v2", gpu_id="0", input_file=input_video, low_resource=low_resource)
-        print(video_des)
-        # Low resource code adapt from: https://huggingface.co/blog/4bit-transformers-bitsandbytes
-        # Qwen
-        if llms=="qwen-7b":
-            if low_resource:
-                llm = AutoModelForCausalLM.from_pretrained(
-                        "Qwen/Qwen1.5-7B-Chat",
-                        # "Qwen/Qwen1.5-14B-Chat",
-                        quantization_config=BitsAndBytesConfig(
-                                                                load_in_4bit=True,
-                                                            bnb_4bit_compute_dtype=torch.float16
-                                                                )
-                    )
-            else:
-                llm = AutoModelForCausalLM.from_pretrained(
-                        "Qwen/Qwen1.5-7B-Chat",
-                        # "Qwen/Qwen1.5-14B-Chat",
-                        device_map="cuda",
-                        torch_dtype=torch.float16,
-                    )
-            tokenizer = AutoTokenizer.from_pretrained(
-                "Qwen/Qwen1.5-7B-Chat"
-                # "Qwen/Qwen1.5-14B-Chat",
-                )
-            messages = [
-                    {"role": "system", "content": "As a music composer fluent in English, you're tasked with creating background music for video. Based on the scene described, provide only one set of tags in English that describe this background music for the video. These tags must includes instruments, music genres, and tempo (BPM). Tags must be plain English words. Example of expected output: Piano, Synths, Strings, Violin, Flute, Reflective, Slow tempo, 96 BPM"},
-                    {"role": "user", "content": str(video_des)}
-                ]
-            text = tokenizer.apply_chat_template(
-                    messages,
-                    tokenize=False,
-                    add_generation_prompt=True
-                )
-            llm_inputs = tokenizer([text], return_tensors="pt").to(llm.device)
-            generated_ids = llm.generate(
-                    llm_inputs.input_ids,
-                    max_new_tokens=512
-                )
-            generated_ids = [
-                    output_ids[len(input_ids):] for input_ids, output_ids in zip(llm_inputs.input_ids, generated_ids)
-                ]
-            response = tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
-        
-        elif llms == "qwen-14b":
+        video_des = generate_prompt_from_video_description(cfg_path="sonique/Video_LLaMA/eval_configs/video_llama_eval_only_vl.yaml", model_type="llama_v2", gpu_id=0, input_file=input_video, low_resource=low_resource)
+        # # Low resource code adapt from: https://huggingface.co/blog/4bit-transformers-bitsandbytes
+        # # Qwen
+        if llms == "qwen-14b":
             if low_resource:
                 llm = AutoModelForCausalLM.from_pretrained(
                         "Qwen/Qwen1.5-14B-Chat",
@@ -227,79 +186,65 @@ def generate_cond(
         elif llms == "mistral-7b":
             # Mistral - 7B
             if low_resource:
-                llm = AutoModelForCausalLM.from_pretrained("mistralai/Mistral-7B-Instruct-v0.2", 
+                llm = AutoModelForCausalLM.from_pretrained("mistralai/Mistral-7B-Instruct-v0.3", 
                                                         quantization_config=BitsAndBytesConfig(
                                                             load_in_4bit=True,
                                                             bnb_4bit_compute_dtype=torch.float16
                                                             )
                                                         )
             else:
-                llm = AutoModelForCausalLM.from_pretrained("mistralai/Mistral-7B-Instruct-v0.2", 
+                llm = AutoModelForCausalLM.from_pretrained("mistralai/Mistral-7B-Instruct-v0.3", 
                                                         device_map="cuda", 
                                                         torch_dtype=torch.float16
                                                         )
-            tokenizer = AutoTokenizer.from_pretrained("mistralai/Mistral-7B-Instruct-v0.2")
+            tokenizer = AutoTokenizer.from_pretrained("mistralai/Mistral-7B-Instruct-v0.3")
             messages = [{"role": "user", "content": f"As a music composer fluent in English, you're tasked with creating background music for video. \
                     Based on the scene described, provide only one set of tags in English that describe this background \
                     music for the video. These tags must include instruments, music genres, and tempo rate(e.g. 90 BPM). \
-                    Avoid any non-English words. Please return the tags in the following JSON structure: {{\'tags\': [\'tag1\', \'tag2\', \'tag3\']}} \
+                    Avoid any non-English words. \
+                    The output must be only one and must be in one line. Do not provide multiple sets of output. \
+                    Example output: Soft,  Relaxing,  Piano,  Cover,  Grand,  Calm,  Classical \
                     Input: {video_des}"}]
 
-            encodeds = tokenizer.apply_chat_template(messages, return_tensors="pt")
-            llm_inputs = encodeds.to(llm.device)
+            encodeds = tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+            llm_inputs = tokenizer([encodeds], return_tensors="pt").to(device)
             # llm.to(device)
 
-            generated_ids = llm.generate(llm_inputs, max_new_tokens=1000, do_sample=True)
-            decoded = tokenizer.batch_decode(generated_ids)
-            print(decoded[0])
-            responses = decoded[0]
-            matched = re.findall(r"\{'tags': \[.*?\]\}|\{\"tags\": \[.*?\]\}", responses)
-            if matched:
-                json_str = matched[-1]
-
-                json_str = json_str.replace("'", '"')
-
-                try:
-                    parsed_json = json.loads(json_str)
-
-                    lst = parsed_json['tags']
-                    response = ', '.join(lst)
-                    print("Extracted Tags:", response)
-                except json.JSONDecodeError as e:
-                    print("Failed to parse JSON:", e)
-            else:
-                print("Failed to extract JSON string from response.")
-        elif llms == "mistral-7b-ft":
-            # Fine-tuned version of Mistral-7B
-            from peft import AutoPeftModelForCausalLM
-            from transformers import pipeline
-            peft_model_id = "./ckpts/mistral-7b-audio-tags"
-            llm = AutoPeftModelForCausalLM.from_pretrained(
-                peft_model_id,
-                quantization_config=BitsAndBytesConfig(
-                                                            load_in_4bit=True,
-                                                            bnb_4bit_compute_dtype=torch.float16
-                                                            )
-            )
-            tokenizer = AutoTokenizer.from_pretrained(peft_model_id)
-            pipe = pipeline("text-generation", model=llm, tokenizer=tokenizer)
-            messages = [{"role": "system", "content": "As a music composer \
-                                      fluent in English, you're tasked with creating \
-                                      background music for video. \
-                                      Based on the scene described, \
-                                      provide only one set of tags in English that \
-                                      describe this background \
-                                      music for the video. \
-                                      These tags must include instruments, \
-                                      music genres, and tempo rate(e.g. 90 BPM).       \
-                                      Avoid any non-English words. Please return the tags in the \
-                                      following JSON structure: {{'tags': ['tag1', 'tag2', 'tag3']}}"},
-                                    {"role": "user", "content": video_des}
-                                    ]
-            prompt = pipe.tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
-            outputs = pipe(prompt, max_new_tokens=256, do_sample=False, temperature=0.1, top_k=50, top_p=0.1, eos_token_id=pipe.tokenizer.eos_token_id, pad_token_id=pipe.tokenizer.pad_token_id)
-            response = outputs[0]['generated_text'][len(prompt):].strip()
-            print(f'ft llm response {response}')
+            generated_ids = llm.generate(llm_inputs.input_ids, max_new_tokens=512)
+            generated_ids = [output_ids[len(input_ids):] for input_ids, output_ids in zip(llm_inputs.input_ids, generated_ids)]
+            response = tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
+            
+        # elif llms == "mistral-7b-ft":
+        #     # Fine-tuned version of Mistral-7B
+        #     from peft import AutoPeftModelForCausalLM
+        #     from transformers import pipeline
+        #     peft_model_id = "./ckpts/mistral-7b-audio-tags"
+        #     llm = AutoPeftModelForCausalLM.from_pretrained(
+        #         peft_model_id,
+        #         quantization_config=BitsAndBytesConfig(
+        #                                                     load_in_4bit=True,
+        #                                                     bnb_4bit_compute_dtype=torch.float16
+        #                                                     )
+        #     )
+        #     tokenizer = AutoTokenizer.from_pretrained(peft_model_id)
+        #     pipe = pipeline("text-generation", model=llm, tokenizer=tokenizer)
+        #     messages = [{"role": "system", "content": "As a music composer \
+        #                               fluent in English, you're tasked with creating \
+        #                               background music for video. \
+        #                               Based on the scene described, \
+        #                               provide only one set of tags in English that \
+        #                               describe this background \
+        #                               music for the video. \
+        #                               These tags must include instruments, \
+        #                               music genres, and tempo rate(e.g. 90 BPM).       \
+        #                               Avoid any non-English words. Please return the tags in the \
+        #                               following JSON structure: {{'tags': ['tag1', 'tag2', 'tag3']}}"},
+        #                             {"role": "user", "content": video_des}
+        #                             ]
+        #     prompt = pipe.tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+        #     outputs = pipe(prompt, max_new_tokens=256, do_sample=False, temperature=0.1, top_k=50, top_p=0.1, eos_token_id=pipe.tokenizer.eos_token_id, pad_token_id=pipe.tokenizer.pad_token_id)
+        #     response = outputs[0]['generated_text'][len(prompt):].strip()
+        #     print(f'ft llm response {response}')
 
         elif llms == "gemma-7b":    
             # Gemma - 7B
@@ -349,117 +294,117 @@ def generate_cond(
             else:
                 print("Failed to extract JSON string from response.")
 
-        elif llms == "llama3-8b":
-            if low_resource:
-                llm = AutoModelForCausalLM.from_pretrained(
-                        "meta-llama/Meta-Llama-3-8B-Instruct",
-                        quantization_config=BitsAndBytesConfig(
-                                                            load_in_4bit=True,
-                                                            bnb_4bit_compute_dtype=torch.float16
-                                                            )
-                    )
-            else:
-                llm = AutoModelForCausalLM.from_pretrained(
-                        "meta-llama/Meta-Llama-3-8B-Instruct",
-                        device_map="cuda",
-                        torch_dtype=torch.float16
-                    )
-            tokenizer = AutoTokenizer.from_pretrained("meta-llama/Meta-Llama-3-8B-Instruct")
-            messages = [
-                                {"role": "system", "content": "As a music composer fluent in English, you're tasked with creating background music for video. \
-                                Based on the scene described, provide only one set of tags in English that describe this background music for the video. \
-                                These tags must includes instruments, music genres, and tempo (BPM). Avoid any non-English words. \
-                                Example of expected output: Piano, Synths, Strings, Violin, Flute, Reflective, Slow tempo, 96 BPM \
-                                Please return the tags in the following JSON structure: {{\'tags\': [\'tag1\', \'tag2\', \'tag3\']}}"},
-                                {"role": "user", "content": str(video_des)}
-                            ]
-            text = tokenizer.apply_chat_template(
-                                messages,
-                                tokenize=False,
-                                add_generation_prompt=True
-                            )
-            llm_inputs = tokenizer([text], return_tensors="pt").to(llm.device)
-            generated_ids = llm.generate(
-                                llm_inputs.input_ids,
-                                max_new_tokens=512
-                            )
-            generated_ids = [
-                                output_ids[len(input_ids):] for input_ids, output_ids in zip(llm_inputs.input_ids, generated_ids)
-                            ]
-            responses = tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
-            print(f'responses:{responses}')
-            matched = re.findall(r"\{'tags': \[.*?\]\}|\{\"tags\": \[.*?\]\}", responses)
-            if matched:
-                json_str = matched[-1]
+        # elif llms == "llama3-8b":
+        #     if low_resource:
+        #         llm = AutoModelForCausalLM.from_pretrained(
+        #                 "meta-llama/Meta-Llama-3-8B-Instruct",
+        #                 quantization_config=BitsAndBytesConfig(
+        #                                                     load_in_4bit=True,
+        #                                                     bnb_4bit_compute_dtype=torch.float16
+        #                                                     )
+        #             )
+        #     else:
+        #         llm = AutoModelForCausalLM.from_pretrained(
+        #                 "meta-llama/Meta-Llama-3-8B-Instruct",
+        #                 device_map="cuda",
+        #                 torch_dtype=torch.float16
+        #             )
+        #     tokenizer = AutoTokenizer.from_pretrained("meta-llama/Meta-Llama-3-8B-Instruct")
+        #     messages = [
+        #                         {"role": "system", "content": "As a music composer fluent in English, you're tasked with creating background music for video. \
+        #                         Based on the scene described, provide only one set of tags in English that describe this background music for the video. \
+        #                         These tags must includes instruments, music genres, and tempo (BPM). Avoid any non-English words. \
+        #                         Example of expected output: Piano, Synths, Strings, Violin, Flute, Reflective, Slow tempo, 96 BPM \
+        #                         Please return the tags in the following JSON structure: {{\'tags\': [\'tag1\', \'tag2\', \'tag3\']}}"},
+        #                         {"role": "user", "content": str(video_des)}
+        #                     ]
+        #     text = tokenizer.apply_chat_template(
+        #                         messages,
+        #                         tokenize=False,
+        #                         add_generation_prompt=True
+        #                     )
+        #     llm_inputs = tokenizer([text], return_tensors="pt").to(llm.device)
+        #     generated_ids = llm.generate(
+        #                         llm_inputs.input_ids,
+        #                         max_new_tokens=512
+        #                     )
+        #     generated_ids = [
+        #                         output_ids[len(input_ids):] for input_ids, output_ids in zip(llm_inputs.input_ids, generated_ids)
+        #                     ]
+        #     responses = tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
+        #     print(f'responses:{responses}')
+        #     matched = re.findall(r"\{'tags': \[.*?\]\}|\{\"tags\": \[.*?\]\}", responses)
+        #     if matched:
+        #         json_str = matched[-1]
 
-                json_str = json_str.replace("'", '"')
+        #         json_str = json_str.replace("'", '"')
 
-                try:
-                    parsed_json = json.loads(json_str)
+        #         try:
+        #             parsed_json = json.loads(json_str)
 
-                    lst = parsed_json['tags']
-                    response = ', '.join(lst)
-                    print("Extracted Tags:", response)
-                except json.JSONDecodeError as e:
-                    print("Failed to parse JSON:", e)
-            else:
-                print("Failed to extract JSON string from response.")
+        #             lst = parsed_json['tags']
+        #             response = ', '.join(lst)
+        #             print("Extracted Tags:", response)
+        #         except json.JSONDecodeError as e:
+        #             print("Failed to parse JSON:", e)
+        #     else:
+        #         print("Failed to extract JSON string from response.")
 
-        elif llms == "llama2-13b":
-            if low_resource:
-                llm = AutoModelForCausalLM.from_pretrained(
-                        "meta-llama/Llama-2-13b-chat-hf",
-                        quantization_config=BitsAndBytesConfig(
-                                                            load_in_4bit=True,
-                                                            bnb_4bit_compute_dtype=torch.float16
-                                                            )
-                    )
-            else:
-                llm = AutoModelForCausalLM.from_pretrained(
-                        "meta-llama/Llama-2-13b-chat-hf",
-                        device_map="cuda",
-                        torch_dtype=torch.float16
-                    )
-            tokenizer = AutoTokenizer.from_pretrained("meta-llama/Llama-2-13b-chat-hf")
-            messages = [
-                        {"role": "system", "content": "As a music composer fluent in English, you're tasked with creating background music for video. \
-                         Based on the scene described, provide only one set of tags in English that describe this background music for the video. \
-                         These tags must includes instruments, music genres, and tempo (BPM). Avoid any non-English words. \
-                         Example of expected output: Piano, Synths, Strings, Violin, Flute, Reflective, Slow tempo, 96 BPM \
-                         Please return the tags in the following JSON structure: {{\'tags\': [\'tag1\', \'tag2\', \'tag3\']}}"},
-                         {"role": "user", "content": str(video_des)}
-                            ]
-            text = tokenizer.apply_chat_template(
-                                messages,
-                                tokenize=False,
-                                add_generation_prompt=True
-                            )
-            llm_inputs = tokenizer([text], return_tensors="pt").to(llm.device)
-            generated_ids = llm.generate(
-                                llm_inputs.input_ids,
-                                max_new_tokens=512
-                            )
-            generated_ids = [
-                                output_ids[len(input_ids):] for input_ids, output_ids in zip(llm_inputs.input_ids, generated_ids)
-                            ]
-            responses = tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
-            print(responses)
-            matched = re.findall(r"\{'tags': \[.*?\]\}|\{\"tags\": \[.*?\]\}", responses)
-            if matched:
-                json_str = matched[-1]
+        # elif llms == "llama2-13b":
+        #     if low_resource:
+        #         llm = AutoModelForCausalLM.from_pretrained(
+        #                 "meta-llama/Llama-2-13b-chat-hf",
+        #                 quantization_config=BitsAndBytesConfig(
+        #                                                     load_in_4bit=True,
+        #                                                     bnb_4bit_compute_dtype=torch.float16
+        #                                                     )
+        #             )
+        #     else:
+        #         llm = AutoModelForCausalLM.from_pretrained(
+        #                 "meta-llama/Llama-2-13b-chat-hf",
+        #                 device_map="cuda",
+        #                 torch_dtype=torch.float16
+        #             )
+        #     tokenizer = AutoTokenizer.from_pretrained("meta-llama/Llama-2-13b-chat-hf")
+        #     messages = [
+        #                 {"role": "system", "content": "As a music composer fluent in English, you're tasked with creating background music for video. \
+        #                  Based on the scene described, provide only one set of tags in English that describe this background music for the video. \
+        #                  These tags must includes instruments, music genres, and tempo (BPM). Avoid any non-English words. \
+        #                  Example of expected output: Piano, Synths, Strings, Violin, Flute, Reflective, Slow tempo, 96 BPM \
+        #                  Please return the tags in the following JSON structure: {{\'tags\': [\'tag1\', \'tag2\', \'tag3\']}}"},
+        #                  {"role": "user", "content": str(video_des)}
+        #                     ]
+        #     text = tokenizer.apply_chat_template(
+        #                         messages,
+        #                         tokenize=False,
+        #                         add_generation_prompt=True
+        #                     )
+        #     llm_inputs = tokenizer([text], return_tensors="pt").to(llm.device)
+        #     generated_ids = llm.generate(
+        #                         llm_inputs.input_ids,
+        #                         max_new_tokens=512
+        #                     )
+        #     generated_ids = [
+        #                         output_ids[len(input_ids):] for input_ids, output_ids in zip(llm_inputs.input_ids, generated_ids)
+        #                     ]
+        #     responses = tokenizer.batch_decode(generated_ids, skip_special_tokens=True)[0]
+        #     print(responses)
+        #     matched = re.findall(r"\{'tags': \[.*?\]\}|\{\"tags\": \[.*?\]\}", responses)
+        #     if matched:
+        #         json_str = matched[-1]
 
-                json_str = json_str.replace("'", '"')
+        #         json_str = json_str.replace("'", '"')
 
-                try:
-                    parsed_json = json.loads(json_str)
+        #         try:
+        #             parsed_json = json.loads(json_str)
 
-                    lst = parsed_json['tags']
-                    response = ', '.join(lst)
-                    print("Extracted Tags:", response)
-                except json.JSONDecodeError as e:
-                    print("Failed to parse JSON:", e)
-            else:
-                print("Failed to extract JSON string from response.")
+        #             lst = parsed_json['tags']
+        #             response = ', '.join(lst)
+        #             print("Extracted Tags:", response)
+        #         except json.JSONDecodeError as e:
+        #             print("Failed to parse JSON:", e)
+        #     else:
+        #         print("Failed to extract JSON string from response.")
         # Clean up memory
         del llm
         gc.collect()

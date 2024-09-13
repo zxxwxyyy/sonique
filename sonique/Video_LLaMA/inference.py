@@ -65,6 +65,16 @@ def generate_prompt_from_video_description(cfg_path, gpu_id, model_type, input_f
         return 
     
     question = "Describe the scene in detail"
+    # question =  """
+    #             As a music composer fluent in English, you're tasked with creating background music for a video. 
+    #             Based on the scene described, provide a set of tags in English that describe this background music for the video. 
+    #             Do not use the tags from the example. 
+    #             Please only return the set of tags that describe this background music for the input video without any explanation.
+    #             Return the tags in the following format: 
+    #             Tags: [Tags1, Tags2, ..., Tempo (BPM)]
+    #             Example format: 
+    #             Tags: [Piano, Synths, Strings, Violin, Flute, Reflective, Slow tempo, 96 BPM]
+    #             """
     with autocast():
         chat.ask(question, chat_state)
 
@@ -74,7 +84,7 @@ def generate_prompt_from_video_description(cfg_path, gpu_id, model_type, input_f
                                temperature=temperature,
                                max_new_tokens=512,
                                max_length=2000)[0]
-    # print("Chatbot response:", llm_response)
+    print("Chatbot response:", llm_response)
 
     # clean up cache 
     del model
