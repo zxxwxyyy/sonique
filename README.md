@@ -33,8 +33,8 @@ is open-source, with a [demo](https://zxxwxyyy.github.io/templates/sonique.html)
 - [Data Collection & Preprocessing](#data-collection--preprocessing)
 - [Video-to-music-generation](#video-to-music-generation)
 - [Text-to-music-generation](#text-to-music-generation)
-- [Fine-tune LLM experiment](#fine-tune-llm)
 - [Citation](#citation)
+<!-- - [Fine-tune LLM experiment](#fine-tune-llm) -->
 
 # Install 
 1. Clone this repo 
@@ -96,12 +96,17 @@ sonique/
 
 # Data Collection & Preprocessing
 
-See [here](./data_preprocessing/README.md) for details.
+![t2i](./demo_videos/assets/dataset.jpg)
+
+In SONIQUE, tag generation for training starts by feeding raw musical data into LP-MusicCaps to generate initial captions. These captions are
+processed by Qwen 14B in two steps: first, it converts the captions into tags, then it cleans the data by removing any incorrect or misleading tags (e.g.,
+”Low Quality”). This results in a clean set of tags for training.
+<!-- See [here](./data_preprocessing/README.md) for details. -->
 
 # Video-to-music-generation
 SONIQUE is a multi-model tool leveraging on [stable_audio_tools](https://github.com/Stability-AI/stable-audio-tools), [Video_LLaMA](https://github.com/DAMO-NLP-SG/Video-LLaMA), and popular LLMs from Huggingface. 
 
-Video description is extracted from the input video. I use [Video_LLaMA](https://github.com/DAMO-NLP-SG/Video-LLaMA) to extract video description from the video. Then it will be pass to LLMs to converted them into tags that describe the background music. For the LLMs currently support: 
+Video description is extracted from the input video. We use [Video_LLaMA](https://github.com/DAMO-NLP-SG/Video-LLaMA) to extract video description from the video. Then it will be pass to LLMs to converted them into tags that describe the background music. For the LLMs currently support: 
 - Mistrial 7B (default)
 - Qwen 14B
 - Gemma 7B (You will need to get authenticate from [Google](https://huggingface.co/google/gemma-7b-it))
