@@ -109,8 +109,8 @@ Video description is extracted from the input video. I use [Video_LLaMA](https:/
 # Text-to-music-generation
 Instead of using video, you may also mannually enter instruments, genres and tempo rate to generate music. You may upload melody as condition(inpaint) in `use melody condition` section. You may also tune the generation parameters and sampler parameters.
 
-# Fine-tune LLM 
-Fine-tuning the LLM at the `caption to tags` stage may improve the model's performance. To see that, I run an experiment fine-tuning `mistral-7b` with paired video description and audio tags. See [here](/fine_tune_llm/README.md) for the detailed process of how this is achieved. 
+<!-- # Fine-tune LLM 
+Fine-tuning the LLM at the `caption to tags` stage may improve the model's performance. To see that, I run an experiment fine-tuning `mistral-7b` with paired video description and audio tags. See [here](/fine_tune_llm/README.md) for the detailed process of how this is achieved.  -->
 
 # Citation
 Please consider citing the project if it helps your research:
