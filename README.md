@@ -119,7 +119,7 @@ Users can then fine-tune the music generation by providing additional prompts or
 specifying negative prompts. The final output is background music that matches both the video and user preferences.
 
 # Subjective Evaluation 
-<img src="./demo_videos/assets/human2.png" alt="Human2" width="500" height="auto" style="margin-bottom: 20px">
+<img src="./demo_videos/assets/Human1.png" alt="Human2" width="500" height="auto" style="margin-bottom: 20px">
 
 We generate a [demo](https://zxxwxyyy.github.io/templates/sonique.html) with seven examples using SONIQUE. These generated videos were evaluated
 by a group of 38 individuals, including of artists with video

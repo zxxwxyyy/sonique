@@ -7,6 +7,8 @@ adp_cond5.json
 adp_uncond3.json
 create_metadata.py
 *.wav
+*.mp4
+*.csv
 stable_audio_vae.json
 stable_audio_vae1.json
 stable_cond.json
@@ -49,3 +51,4 @@ efficient_video_bgm.egg-info
 scripts
 get_10sec_video_chunk.py
 dataset_copy.py
+generate_sample.py
