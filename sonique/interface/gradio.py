@@ -783,12 +783,11 @@ def create_txt2audio_ui(model_config):
     with gr.Blocks() as ui:
         gr.Markdown(
         """
-        <h1 align="center">SONIQUE: Efficient Video Background Music Generation</h1>
+        <h1 align="center">SONIQUE: Video Background Music Generation Using Unpaired Audio-Visual Data</h1>
 
-        <h5 align="center">A Multi-model tool that designed to help video editors \
-            generate background music on video & tv series' transition scene. \
-            In addition, it can be used by music composers to generate conditioned \
-            music base on instruments, genres, tempo rate, and even specific melodies. 
+        <h5 align="center">A model for generating background music tailored to video content. \
+                        Users can control specific aspects of the music, such as instruments, \
+                        genres, tempo, and melodies, ensuring the generated output fits their creative vision.   
         </h5> 
         
         <h3>Video <span>&#8594;</span> Music:</h3>
