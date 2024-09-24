@@ -568,10 +568,11 @@ def create_sampling_ui(model_config, inpainting=False):
             negative_prompt = gr.Textbox(label="Optional: enter negative tags", placeholder="Negative tags - things you don't want in the output.")
             llms = gr.Dropdown(["mistral-7b", 
                                 "gemma-7b", 
-                                "llama3-8b",  
+                                # "llama3-8b",  
                                 "qwen-14b", 
-                                "llama2-13b",
-                                "mistral-7b-ft"], 
+                                # "llama2-13b",
+                                # "mistral-7b-ft"
+                                ], 
                                 label="Required: LLMs", info="Select llm to extract video description to tags. Default Mistral-7B")
             low_resource = gr.Checkbox(label="Optional: To run the model in low_resource mode", value=True)
             generate_button = gr.Button("Generate", variant='primary', scale=1)
@@ -717,28 +718,28 @@ def create_sampling_ui(model_config, inpainting=False):
     #                                 cache_examples=False,
     #                                 label="Example Video+Melody Input")
     
-    prompt_input = [
-        instruments,
-        genres,
-        tempo,
-        init_audio_checkbox,
-        init_audio_input,
-        use_video,
-        video_input
-    ]
-    prompt_examples = gr.Examples(examples=[
-        ["Guitar, Drums, Bass", "Rock", "130 bpm", False, None, False, None],
-        ["Piano", "Classical, Ambient, Slow", "80 bpm", False, None, False, None],
-        ["Drums", "", "80 bpm", False, None, False, None]
-        ], 
-                           inputs=prompt_input,
-                           outputs=[audio_output, 
-                                    video_output,
-                                    audio_spectrogram_output,
-                                    current_prompt], 
-                                    fn=generate_cond,
-                                    cache_examples=False,
-                                    label="Example Prompt Input")
+    # prompt_input = [
+    #     instruments,
+    #     genres,
+    #     tempo,
+    #     init_audio_checkbox,
+    #     init_audio_input,
+    #     use_video,
+    #     video_input
+    # ]
+    # prompt_examples = gr.Examples(examples=[
+    #     ["Guitar, Drums, Bass", "Rock", "130 bpm", False, None, False, None],
+    #     ["Piano", "Classical, Ambient, Slow", "80 bpm", False, None, False, None],
+    #     ["Drums", "", "80 bpm", False, None, False, None]
+    #     ], 
+    #                        inputs=prompt_input,
+    #                        outputs=[audio_output, 
+    #                                 video_output,
+    #                                 audio_spectrogram_output,
+    #                                 current_prompt], 
+    #                                 fn=generate_cond,
+    #                                 cache_examples=False,
+    #                                 label="Example Prompt Input")
     
     # prompt_melody_input = [
     #     instruments,
@@ -770,8 +771,8 @@ def create_sampling_ui(model_config, inpainting=False):
         # with gr.Row():
         #     video_melody_examples
 
-        with gr.Row():
-            prompt_examples
+        # with gr.Row():
+        #     prompt_examples
         # with gr.Row():
         #     prompt_melody_examples
             
