@@ -5,7 +5,7 @@
 <div style='display:flex; gap: 0.5rem; '>
 <a href='https://zxxwxyyy.github.io/templates/sonique.html'><img src='https://img.shields.io/badge/Demo-Website-blueviolet'></a>
 <!-- <a href=''><img src='https://img.shields.io/badge/%F0%9F%A4%97%20Hugging%20Face-Demo(Coming Soon)-blue'></a> -->
-<a href=''><img src='https://img.shields.io/badge/Paper-arXiv-red'></a>
+<a href='https://arxiv.org/abs/2410.03879'><img src='https://img.shields.io/badge/Paper-arXiv-red'></a>
 <a href='https://drive.google.com/file/d/1kRy-B82ZGvRrJq4M5ob45jOvQgp9r_Xz/view?usp=sharing'><img src='https://img.shields.io/badge/Dowload-Checkpoint-green'></a>
 </div>
 
