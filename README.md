@@ -138,12 +138,13 @@ Fine-tuning the LLM at the `caption to tags` stage may improve the model's perfo
 # Citation
 Please consider citing the project if it helps your research:
 ```
-@misc{zhang2024sonique,
-  title={SONIQUE: Efficient Video Background Music Generation},
-  author={Zhang, Liqian},
-  year={2024},
-  publisher={GitHub},
-  journal={GitHub repository},
-  howpublished={https://github.com/zxxwxyyy/sonique},
+@misc{zhang2024soniquevideobackgroundmusic,
+      title={SONIQUE: Video Background Music Generation Using Unpaired Audio-Visual Data}, 
+      author={Liqian Zhang and Magdalena Fuentes},
+      year={2024},
+      eprint={2410.03879},
+      archivePrefix={arXiv},
+      primaryClass={cs.SD},
+      url={https://arxiv.org/abs/2410.03879}, 
 }
 ```
